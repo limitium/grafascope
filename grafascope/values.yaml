@@ -92,6 +92,7 @@ victoria-logs-collector:
     variant: ""
     pullPolicy: IfNotPresent
   serviceAccount:
+    create: false
     automount: true
     annotations: {}
     name: gfs-user

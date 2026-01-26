@@ -116,6 +116,8 @@ global:
 
 # -- Service account is needed to enrich logs with pod metadata using Kubernetes API
 serviceAccount:
+  # Create a ServiceAccount resource?
+  create: true
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
   # Annotations to add to the service account
