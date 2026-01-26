@@ -43,7 +43,7 @@ victoria-metrics:
       nginx.ingress.kubernetes.io/use-regex: "true"
   persistence:
     enabled: true
-    size: 10Gi
+    size: 1Gi
 
 victoria-logs:
   image:
@@ -57,7 +57,7 @@ victoria-logs:
       nginx.ingress.kubernetes.io/use-regex: "true"
   persistence:
     enabled: true
-    size: 10Gi
+    size: 1Gi
 
 victoria-traces:
   image:
@@ -71,7 +71,7 @@ victoria-traces:
       nginx.ingress.kubernetes.io/use-regex: "true"
   persistence:
     enabled: true
-    size: 10Gi
+    size: 1Gi
 
 vmagent:
   enabled: true
@@ -94,9 +94,9 @@ victoria-logs-collector:
   serviceAccount:
     automount: true
     annotations: {}
-    name: ""
+    name: gfs-user
   remoteWrite:
-    - url: http://victoria-logs:9428
+    - url: "" # built from global protocol/ports/paths when empty
       headers: {}
   collector:
     timeField: ["time", "ts", "timestamp"]
@@ -112,3 +112,7 @@ victoria-logs-collector:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+gfs-user:
+  enabled: true
+  username: gfs-user

@@ -21,7 +21,7 @@ spec:
       {{- with .Values.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
-      serviceAccountName: {{ include "vm.fullname" $ctx }}
+      serviceAccountName: {{ default (include "vm.fullname" $ctx) .Values.serviceAccount.name }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}

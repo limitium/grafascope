@@ -68,6 +68,8 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
           {{- $args := .Values.args }}
           {{- $pathPrefix := .Values.httpPathPrefix }}
           {{- if not $pathPrefix }}

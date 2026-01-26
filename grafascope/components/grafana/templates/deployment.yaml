@@ -33,6 +33,8 @@ spec:
         - name: grafana
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - name: http
               {{- $port := default "" .Values.global.ports.grafana }}
@@ -83,6 +85,10 @@ spec:
             - name: dashboards-provisioning
               mountPath: /etc/grafana/provisioning/dashboards
             {{- end }}
+            {{- if .Values.persistence.enabled }}
+            - name: storage
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /api/health
@@ -110,4 +116,9 @@ spec:
         - name: dashboards-provisioning
           configMap:
             name: {{ include "grafana.fullname" . }}-dashboard-provisioning
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-storage" (include "grafana.fullname" .)) .Values.persistence.existingClaim }}
         {{- end }}

@@ -116,6 +116,15 @@
       {{- end }}
       {{- $value := $rwValue }}
       {{- if eq $rwKey "url" }}
+        {{- if not $rwValue }}
+          {{- $global := $Values.global | default dict }}
+          {{- $protocol := default "http" $global.protocol }}
+          {{- $ports := $global.ports | default dict }}
+          {{- $port := default 9428 $ports.victoriaLogs }}
+          {{- $paths := $global.paths | default dict }}
+          {{- $path := default "" $paths.victoriaLogs }}
+          {{- $rwValue = printf "%s://victoria-logs:%v%s" $protocol $port $path }}
+        {{- end }}
         {{- $url := urlParse $rwValue }}
         {{- $_ = set $url "path" (ternary "/insert/native" $url.path (empty (trimPrefix "/" $url.path))) }}
         {{- $value = urlJoin $url }}

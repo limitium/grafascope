@@ -35,6 +35,14 @@ datasources:
 dashboards:
   enabled: true
 
+persistence:
+  enabled: true
+  existingClaim: "" # use existing PVC name instead of creating one
+  storageClass: "" # leave empty to use default
+  accessModes: ["ReadWriteOnce"]
+  size: 10Gi
+  mountPath: /var/lib/grafana
+
 plugins: []
 pluginsInstall: false
 

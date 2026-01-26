@@ -30,3 +30,8 @@ dependencies:
     version: 0.2.7
     repository: "file://scrapers/victoria-logs-collector"
     condition: victoria-logs-collector.enabled
+
+  - name: gfs-user
+    version: 0.1.0
+    repository: "file://gfs-user"
+    condition: gfs-user.enabled

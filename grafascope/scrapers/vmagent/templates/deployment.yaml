@@ -33,6 +33,8 @@ spec:
         - name: vmagent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
           args:
             - "-promscrape.config=/etc/vmagent/scrape.yml"
             {{- $remoteWriteUrl := .Values.remoteWriteUrl }}
