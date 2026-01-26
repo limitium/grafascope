@@ -1,0 +1,14 @@
+{{- $path := .Values.global.paths.vmagent -}}
+{{- $port := default .Values.service.port .Values.global.ports.vmagent -}}
+{{- include "grafascope.common.ingress" (dict
+  "context" .
+  "name" (include "vmagent.fullname" .)
+  "labels" (include "vmagent.labels" .)
+  "serviceName" (include "vmagent.fullname" .)
+  "servicePort" $port
+  "path" $path
+  "pathType" "Prefix"
+  "ingress" .Values.ingress
+  "rewrite" (dict "enabled" false "target" "")
+) }}
+

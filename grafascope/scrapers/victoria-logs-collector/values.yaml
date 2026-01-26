@@ -1,0 +1,209 @@
+# Default values for victoria-logs-collector.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Important helm-chart settings below, modify them with your own settings
+
+image:
+    # -- Image registry
+    registry: ""
+    # -- Image repository
+    repository: victoriametrics/vlagent
+    # -- Image tag
+    tag: ""
+    # -- Image tag suffix, which is appended to `Chart.AppVersion` if no `server.image.tag` is defined
+    variant: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+# -- List of log destinations. Logs will be replicated to all listed destinations.
+#
+# If the url path is not specified, the logs will be sent to the /insert/native endpoint.
+remoteWrite: []
+  # - url: http://victoria-logs:9428
+
+  # - url: http://victoria-logs:9428
+  #   headers:
+  #     ProjectID: 0
+  #     AccountID: 0
+  #     VL-Extra-Fields:
+  #       zone: us-east1-c
+  #       source: victoria-logs-collector
+  #     VL-Ignore-Fields:
+  #       - kubernetes.node_labels*
+  #       - kubernetes.pod_annotations*
+
+  # - url: https://victoria-logs:9428
+  #   tlsCAFile: "/etc/tls/ca.crt"
+  # - url: https://victoria-logs:9428
+  #   tlsInsecureSkipVerify: true
+
+# -- List of collector specific properties
+collector:
+
+  # -- List of fields to be used as `_time` field. The first found field will be used.
+  # See https://docs.victoriametrics.com/victorialogs/keyconcepts/#time-field for more details.
+  timeField:
+    - time
+    - ts
+    - timestamp
+
+  # -- List of fields to be used as `_msg` field. The first found field will be used.
+  # See https://docs.victoriametrics.com/victorialogs/keyconcepts/#message-field for more details.
+  msgField:
+    - message
+    - msg
+
+  # -- LogsQL filter for excluding container logs.
+  # The filter is applied to container metadata fields (e.g., kubernetes.namespace_name, kubernetes.container_name) before reading the log files.
+  # This significantly reduces CPU and I/O usage by skipping logs from unwanted containers.
+  # See https://docs.victoriametrics.com/victorialogs/vlagent/#filtering-kubernetes-logs
+  excludeFilter: ""
+
+  # -- Include Pod labels as additional fields in the log entries.
+  # Even this setting is disabled, Pod labels are available for filtering via .Values.excludeFilter parameter
+  includePodLabels: true
+
+  # -- Include Pod annotations as additional fields in the log entries.
+  # Even this setting is disabled, Pod annotations are available for filtering via .Values.excludeFilter parameter
+  includePodAnnotations: false
+
+  # -- Include Node labels as additional fields in the log entries.
+  # Even this setting is disabled, Node labels are available for filtering via .Values.excludeFilter parameter
+  includeNodeLabels: false
+
+  # -- Include Node annotations as additional fields in the log entries.
+  # Even this setting is disabled, Node annotations are available for filtering via .Values.excludeFilter parameter
+  includeNodeAnnotations: false
+
+# -- Environment variables (ex.: secret tokens).
+env: []
+  # - name: VL_PASSWORD
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: auth-secret
+  #       key: VL_PASSWORD
+
+resources:
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Advanced helm-chart configuration below, it is recommended to pass default parameters
+
+# -- Override chart name
+nameOverride: ""
+
+# -- Override resources fullname
+fullnameOverride: ""
+
+global:
+  # -- Image pull secrets, that can be shared across multiple helm charts
+  imagePullSecrets: []
+  image:
+    # -- Image registry, that can be shared across multiple helm charts
+    registry: ""
+  # -- Openshift security context compatibility configuration
+  compatibility:
+    openshift:
+      adaptSecurityContext: "auto"
+  cluster:
+    # -- K8s cluster domain suffix, used for building storage pods' FQDN. Details are [here](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/)
+    dnsDomain: cluster.local.
+
+# -- Service account is needed to enrich logs with pod metadata using Kubernetes API
+serviceAccount:
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Extra labels for Pods only
+podLabels: {}
+
+# -- Security context to be added to pod
+podSecurityContext:
+  enabled: true
+  # fsGroup: 2000
+
+# -- Security context to be added to pod's containers
+securityContext:
+  enabled: true
+  # capabilities:
+  #   drop:
+  #     - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Extra Volumes for the pod
+extraVolumes: []
+  # - name: tls-certs
+  #   secret:
+  #     secretName: mtls-secret
+
+# -- Extra Volume Mounts for the container
+extraVolumeMounts: []
+  # - name: tls-certs
+  #   mountPath: /etc/mtls
+  #   readOnly: true
+
+# -- Annotations to be added to the deployment
+annotations: {}
+
+# -- Annotations to be added to pod
+podAnnotations: {}
+
+# -- Pod's node selector. Details are [here](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
+nodeSelector: {}
+
+# -- Node tolerations for server scheduling to nodes with taints. Details are [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/)
+tolerations: []
+
+# -- Pod topologySpreadConstraints
+topologySpreadConstraints: # []
+  # - maxSkew: 1
+  #   topologyKey: topology.kubernetes.io/zone
+  #   whenUnsatisfiable: DoNotSchedule
+
+# -- Pod affinity
+affinity: {}
+
+# -- Priority class to be assigned to the pod(s)
+priorityClassName: ""
+
+podMonitor:
+  # -- Enable PodMonitor
+  enabled: false
+  # -- PodMonitor labels
+  extraLabels: {}
+  # -- PodMonitor annotations
+  annotations: {}
+  # -- Whether to use [VMPodScrape](https://docs.victoriametrics.com/operator/resources/vmpodscrape/) from VM operator instead of PodMonitor
+  vm: false
+
+# -- VLAgent extra command line arguments
+extraArgs:
+  envflag.enable: true
+  envflag.prefix: VL_
+  loggerFormat: json
+
+# -- Enterprise license key configuration for VictoriaLogs enterprise.
+# Required only for VictoriaLogs enterprise. Check docs [here](https://docs.victoriametrics.com/victoriametrics/enterprise/#victorialogs-enterprise-features),
+# Request a trial license [here](https://victoriametrics.com/products/enterprise/trial/)
+license:
+  # -- License key
+  key: ""
+
+  # -- Use existing secret with license key
+  secret:
+    # -- Existing secret name
+    name: ""
+    # -- Key in secret with license key
+    key: ""

@@ -1,0 +1,13 @@
+
+{{- $port := default .Values.service.port .Values.global.ports.grafana -}}
+{{- include "grafascope.common.ingress" (dict
+  "context" .
+  "name" (include "grafana.fullname" .)
+  "labels" (include "grafana.labels" .)
+  "serviceName" (include "grafana.fullname" .)
+  "servicePort" $port
+  "path" .Values.global.paths.grafana
+  "pathType" "Prefix"
+  "ingress" .Values.ingress
+  "rewrite" (dict "enabled" false "target" "")
+) }}

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: victoria-common
+description: Shared Helm templates for Victoria charts
+type: library
+version: 0.1.0
+dependencies:
+  - name: grafascope-common
+    version: 0.1.0
+    repository: "file://../../../grafascope-common"
+

@@ -1,0 +1,32 @@
+apiVersion: v2
+name: grafascope
+description: Grafascope umbrella chart (Grafana + VictoriaMetrics/Logs/Traces)
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: grafana
+    version: 0.1.0
+    repository: "file://components/grafana"
+
+  - name: victoria-metrics
+    version: 0.1.0
+    repository: "file://components/victoria-metrics"
+
+  - name: victoria-logs
+    version: 0.1.0
+    repository: "file://components/victoria-logs"
+
+  - name: victoria-traces
+    version: 0.1.0
+    repository: "file://components/victoria-traces"
+
+  - name: vmagent
+    version: 0.1.0
+    repository: "file://scrapers/vmagent"
+    condition: vmagent.enabled
+
+  - name: victoria-logs-collector
+    version: 0.2.7
+    repository: "file://scrapers/victoria-logs-collector"
+    condition: victoria-logs-collector.enabled

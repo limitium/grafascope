@@ -1,0 +1,12 @@
+
+apiVersion: v2
+name: victoria-metrics
+description: Minimal VictoriaMetrics single-node chart
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: victoria-common
+    version: 0.1.0
+    repository: "file://../victoria-common"
+appVersion: "v1.110.0"

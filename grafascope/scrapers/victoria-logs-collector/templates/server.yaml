@@ -1,0 +1,86 @@
+{{- $ctx := dict "helm" . }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "vm.fullname" $ctx }}
+  namespace: {{ include "vm.namespace" $ctx }}
+  labels: {{ include "vm.labels" $ctx | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{ include "vm.selectorLabels" $ctx | nindent 6 }}
+  template:
+    metadata:
+      {{- $_ := set $ctx "extraLabels" .Values.podLabels }}
+      labels: {{ include "vm.podLabels" $ctx | nindent 8 }}
+      {{- $_ := unset $ctx "extraLabels" }}
+      {{- with .Values.podAnnotations }}
+      annotations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      serviceAccountName: {{ include "vm.fullname" $ctx }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{ omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with (.Values.imagePullSecrets | default (.Values.global).imagePullSecrets) }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: vlagent
+          image: {{ include "vm.image" $ctx }}
+          imagePullPolicy: IfNotPresent
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{ omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 9429
+              protocol: TCP
+          {{- $args := (include "victoria-logs-collector.args" . | fromYaml) }}
+          {{- include "vm.args" $args | nindent 10 }}
+          {{- with .Values.env }}
+          env: {{ toYaml . | nindent 12}}
+          {{- end }}
+          volumeMounts:
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+              # /var/lib is needed in environments like Minikube, where logs may symlink to /var/lib paths.
+            - name: varlib
+              mountPath: /var/lib
+              readOnly: true
+            - name: vl-collector-data
+              mountPath: {{ $args.tmpDataPath }}
+            {{- include "vm.license.mount" . | nindent 12 }}
+      volumes:
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlib
+          hostPath:
+            path: /var/lib
+        - name: vl-collector-data
+          hostPath:
+            path: {{ $args.tmpDataPath }}
+        {{- include "vm.license.volume" . | nindent 8 }}

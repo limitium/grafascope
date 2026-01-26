@@ -1,0 +1,39 @@
+annotations:
+  artifacthub.io/category: monitoring-logging
+  artifacthub.io/changes: |
+    - TODO
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/links: |
+    - name: Sources
+      url: https://github.com/VictoriaMetrics/helm-charts/tree/master/charts/victoria-logs-collector
+    - name: Charts repo
+      url: https://victoriametrics.github.io/helm-charts/
+    - name: Changelog
+      url: https://docs.victoriametrics.com/changelog/
+  artifacthub.io/readme: |
+    # VictoriaLogs Collector Helm chart
+
+    Chart documentation is available [here](https://docs.victoriametrics.com/helm/victoria-logs-collector/)
+apiVersion: v2
+appVersion: v1.43.1
+dependencies:
+- name: victoria-metrics-common
+  repository: https://victoriametrics.github.io/helm-charts
+  version: 0.0.*
+description: VictoriaLogs Collector - collects logs from Kubernetes containers and
+  stores them to VictoriaLogs
+home: https://github.com/VictoriaMetrics/helm-charts
+icon: https://avatars.githubusercontent.com/u/43720803?s=200&v=4
+keywords:
+- victorialogs
+- logs
+- agent
+- collector
+- kubernetes
+- observability
+kubeVersion: '>=1.25.0-0'
+name: victoria-logs-collector
+sources:
+- https://github.com/VictoriaMetrics/helm-charts
+type: application
+version: 0.2.7

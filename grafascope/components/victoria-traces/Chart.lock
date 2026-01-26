@@ -1,0 +1,6 @@
+dependencies:
+- name: victoria-common
+  repository: file://../victoria-common
+  version: 0.1.0
+digest: sha256:93cc8f5fd3c0615cea00276e83cbde96fafd8530700b0d0ed78bb51f6549db0e
+generated: "2026-01-23T17:13:09.682797Z"

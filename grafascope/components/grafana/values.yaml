@@ -1,0 +1,49 @@
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts: []
+  tls: []
+
+admin:
+  existingSecret: "" # if set, uses this secret with keys admin-user/admin-password
+  user: admin
+  password: admin
+
+resources: {}
+#  requests:
+#    cpu: 250m
+#    memory: 256Mi
+#  limits:
+#    cpu: 1
+#    memory: 1Gi
+
+datasources:
+  enabled: true
+  # Optional overrides; when empty, URLs are derived from global paths.
+  victoriaMetricsUrl: ""
+  victoriaLogsUrl: ""
+  victoriaTracesUrl: ""
+
+dashboards:
+  enabled: true
+
+plugins: []
+pluginsInstall: false
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+server:
+  domain: ""
+  rootUrl: ""
+  serveFromSubPath: false

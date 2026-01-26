@@ -1,0 +1,114 @@
+global:
+  domain: localhost
+  protocol: http
+  paths:
+    grafana: /grafana
+    victoriaMetrics: /victoria-metrics
+    victoriaLogs: /victoria-logs
+    victoriaTraces: /victoria-traces
+    vmagent: /vmagent
+  ports:
+    grafana: 3000
+    victoriaMetrics: 8428
+    victoriaLogs: 9428
+    victoriaTraces: 9410
+    vmagent: 8429
+  scrapers:
+    metricsTargets: []
+
+grafana:
+  image:
+    repository: limitium/grafanaplg
+    tag: 11.2.0-with-vl
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    className: nginx
+  server:
+    serveFromSubPath: true
+  datasources:
+    enabled: true
+  plugins:
+    - victoriametrics-logs-datasource
+
+victoria-metrics: 
+  image:
+    repository: victoriametrics/victoria-metrics
+    tag: "v1.110.0"
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+  persistence:
+    enabled: true
+    size: 10Gi
+
+victoria-logs:
+  image:
+    repository: victoriametrics/victoria-logs
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+  persistence:
+    enabled: true
+    size: 10Gi
+
+victoria-traces:
+  image:
+    repository: victoriametrics/victoria-traces
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/use-regex: "true"
+  persistence:
+    enabled: true
+    size: 10Gi
+
+vmagent:
+  enabled: true
+  image:
+    repository: victoriametrics/vmagent
+    tag: "v1.110.0"
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+  scrapeTargets: []
+
+victoria-logs-collector:
+  enabled: true
+  image:
+    registry: ""
+    repository: victoriametrics/vlagent
+    tag: "v1.43.1"
+    variant: ""
+    pullPolicy: IfNotPresent
+  serviceAccount:
+    automount: true
+    annotations: {}
+    name: ""
+  remoteWrite:
+    - url: http://victoria-logs:9428
+      headers: {}
+  collector:
+    timeField: ["time", "ts", "timestamp"]
+    msgField: ["message", "msg"]
+    excludeFilter: ""
+    includePodLabels: true
+    includePodAnnotations: false
+    includeNodeLabels: false
+    includeNodeAnnotations: false
+  env: []
+  resources: {}
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

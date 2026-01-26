@@ -1,0 +1,6 @@
+apiVersion: v2
+name: grafascope-common
+description: Shared Helm templates for Grafascope
+type: library
+version: 0.1.0
+

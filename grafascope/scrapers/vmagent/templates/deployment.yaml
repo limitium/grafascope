@@ -1,0 +1,76 @@
+{{- if .Values.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vmagent.fullname" . }}
+  labels:
+    {{- include "vmagent.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "vmagent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "vmagent.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: vmagent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "-promscrape.config=/etc/vmagent/scrape.yml"
+            {{- $remoteWriteUrl := .Values.remoteWriteUrl }}
+            {{- if not $remoteWriteUrl }}
+            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) .Values.global.ports.victoriaMetrics .Values.global.paths.victoriaMetrics }}
+            {{- end }}
+            - {{ printf "-remoteWrite.url=%s" $remoteWriteUrl | quote }}
+            {{- if .Values.global.paths.vmagent }}
+            - {{ printf "-http.pathPrefix=%s" .Values.global.paths.vmagent | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              {{- $port := default "" .Values.global.ports.vmagent }}
+              containerPort: {{ default .Values.service.port $port }}
+          volumeMounts:
+            - name: scrape
+              mountPath: /etc/vmagent
+          {{- $healthPath := "/health" }}
+          {{- if .Values.global.paths.vmagent }}
+          {{- $healthPath = printf "%s/health" .Values.global.paths.vmagent }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ $healthPath | quote }}
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: {{ $healthPath | quote }}
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: scrape
+          configMap:
+            name: {{ include "vmagent.fullname" . }}-scrape
+{{- end }}
+

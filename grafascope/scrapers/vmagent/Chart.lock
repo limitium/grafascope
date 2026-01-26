@@ -1,0 +1,6 @@
+dependencies:
+- name: grafascope-common
+  repository: file://../../../grafascope-common
+  version: 0.1.0
+digest: sha256:6102dd20ce7aeb6b8ad76436cdb837dc9ff9abae5c4114f3b4b5ae338353c72b
+generated: "2026-01-26T17:17:22.164451Z"
