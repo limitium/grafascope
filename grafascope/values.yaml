@@ -22,6 +22,8 @@ global:
     victoria-logs: 9428
     victoria-traces: 9410
     vmagent: 8429
+  # Optional imagePullSecrets applied to all charts that support it.
+  imagePullSecrets: []
   scrapers:
     # Optional global scrape targets for vmagent.
     metricsTargets: []
@@ -115,6 +117,7 @@ victoria-traces:
     # Storage for traces data.
     enabled: true
     size: 1Gi
+    storageClassName: ""
   # Centralized resources (override chart defaults).
   resources:
     requests:

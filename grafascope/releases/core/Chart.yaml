@@ -5,6 +5,10 @@ type: application
 version: 0.1.0
 
 dependencies:
+  - name: victoria-common
+    version: 0.1.0
+    repository: "file://../../libs/victoria-common"
+
   - name: grafascope-common
     version: 0.1.0
     repository: "file://../../libs/grafascope-common"

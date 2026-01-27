@@ -12,7 +12,7 @@ ingress:
 persistence:
   enabled: true
   existingClaim: "" # use existing PVC name instead of creating one
-  storageClass: "" # leave empty to use default
+  storageClassName: "" # leave empty to use default
   accessModes: ["ReadWriteOnce"]
   size: 10Gi
   mountPath: /vlogs

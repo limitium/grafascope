@@ -1,4 +1,3 @@
-
 replicaCount: 1 # Grafana Deployment replicas
 
 service:
@@ -6,7 +5,7 @@ service:
   port: 3000
 
 ingress:
-  # Ingress is disabled by default in the component chart.
+  # Ingress is disabled by default in the service chart.
   enabled: false
   className: nginx
   annotations: {}
@@ -37,7 +36,7 @@ persistence:
   # Grafana storage for dashboards/plugins.
   enabled: true
   existingClaim: "" # use existing PVC name instead of creating one
-  storageClass: "" # leave empty to use default
+  storageClassName: "" # leave empty to use default
   accessModes: ["ReadWriteOnce"]
   size: 10Gi
   mountPath: /var/lib/grafana

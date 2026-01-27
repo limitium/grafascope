@@ -9,4 +9,4 @@ appVersion: "v1.0.0"
 dependencies:
   - name: victoria-common
     version: 0.1.0
-    repository: "file://../victoria-common"
+    repository: "file://../../libs/victoria-common"
