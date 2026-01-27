@@ -1,0 +1,53 @@
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: "" # if empty, chart will use fullname
+
+rbac:
+  create: true
+  # true => ClusterRole/ClusterRoleBinding (required if you include cluster-scoped resources like nodes/namespaces/PVs)
+  # false => Role/RoleBinding (namespace-scoped; you must remove cluster-scoped resources from the list)
+  clusterWide: true
+  roleName: "gfs-user-role"
+  bindingName: "gfs-user-binding"
+  apiGroups:
+    - ""
+    - apps
+    - autoscaling
+    - batch
+    - extensions
+    - policy
+    - rbac.authorization.k8s.io
+  resources:
+    - pods
+    - componentstatuses
+    - configmaps
+    - daemonsets
+    - deployments
+    - deployments/scale
+    - events
+    - endpoints
+    - horizontalpodautoscalers
+    - ingress
+    - jobs
+    - cronjobs
+    - limitranges
+    - namespaces
+    - nodes
+    - persistentvolumes
+    - persistentvolumeclaims
+    - resourcequotas
+    - replicasets
+    - replicationcontrollers
+    - serviceaccounts
+    - services
+  verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete

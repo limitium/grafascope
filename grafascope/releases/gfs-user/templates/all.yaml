@@ -1,0 +1,47 @@
+{{- $baseName := default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $fullname := default $baseName .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- $saName := default $fullname .Values.serviceAccount.name | trim -}}
+{{- $roleName := default (printf "%s-role" $fullname) .Values.rbac.roleName | trim -}}
+{{- $bindingName := default (printf "%s-binding" $fullname) .Values.rbac.bindingName | trim -}}
+
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $saName }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}
+
+---
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: {{ ternary "ClusterRole" "Role" .Values.rbac.clusterWide }}
+metadata:
+  name: {{ $roleName }}
+  {{- if not .Values.rbac.clusterWide }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+rules:
+  - apiGroups: {{ toYaml .Values.rbac.apiGroups | nindent 6 }}
+    resources: {{ toYaml .Values.rbac.resources | nindent 6 }}
+    verbs: {{ toYaml .Values.rbac.verbs | nindent 6 }}
+{{- end }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.rbac.create }}
+kind: {{ ternary "ClusterRoleBinding" "RoleBinding" .Values.rbac.clusterWide }}
+metadata:
+  name: {{ $bindingName }}
+  {{- if not .Values.rbac.clusterWide }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ ternary "ClusterRole" "Role" .Values.rbac.clusterWide }}
+  name: {{ $roleName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $saName }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

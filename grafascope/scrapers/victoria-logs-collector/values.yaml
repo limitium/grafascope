@@ -84,14 +84,6 @@ env: []
   #       name: auth-secret
   #       key: VL_PASSWORD
 
-resources:
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
 # Advanced helm-chart configuration below, it is recommended to pass default parameters
 
 # -- Override chart name
@@ -116,8 +108,8 @@ global:
 
 # -- Service account is needed to enrich logs with pod metadata using Kubernetes API
 serviceAccount:
-  # Create a ServiceAccount resource?
-  create: true
+  # Create a ServiceAccount resource? Prefer using gfs-user from global values.
+  create: false
   # Automatically mount a ServiceAccount's API credentials?
   automount: true
   # Annotations to add to the service account
@@ -137,6 +129,7 @@ podSecurityContext:
 # -- Security context to be added to pod's containers
 securityContext:
   enabled: true
+  readOnlyRootFilesystem: true
   # capabilities:
   #   drop:
   #     - ALL

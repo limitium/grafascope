@@ -1,0 +1,57 @@
+
+replicaCount: 1 # Grafana Deployment replicas
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  # Ingress is disabled by default in the component chart.
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts: []
+  tls: []
+
+admin:
+  # Local admin credentials (override in production).
+  existingSecret: "" # if set, uses this secret with keys admin-user/admin-password
+  user: admin
+  password: admin
+
+datasources:
+  # Provision Victoria datasources.
+  enabled: true
+  # Optional overrides; when empty, URLs are derived from global paths.
+  victoria-metrics-url: ""
+  victoria-logs-url: ""
+  victoria-traces-url: ""
+
+dashboards:
+  # Provision bundled dashboards.
+  enabled: true
+
+## Grafana persistence defaults live here; global values override size only.
+## Keep mountPath fixed to the image requirement.
+persistence:
+  # Grafana storage for dashboards/plugins.
+  enabled: true
+  existingClaim: "" # use existing PVC name instead of creating one
+  storageClass: "" # leave empty to use default
+  accessModes: ["ReadWriteOnce"]
+  size: 10Gi
+  mountPath: /var/lib/grafana
+
+plugins: []
+pluginsInstall: false # disable for offline images
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+server:
+  # Optional Grafana server overrides (e.g., for subpath hosting).
+  domain: ""
+  rootUrl: ""
+  serveFromSubPath: false

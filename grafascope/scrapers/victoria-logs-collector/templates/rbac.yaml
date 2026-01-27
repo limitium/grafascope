@@ -1,4 +1,8 @@
 {{- $ctx := dict "helm" . }}
+{{- $saName := default (include "vm.fullname" $ctx) .Values.serviceAccount.name }}
+{{- if and .Values.global .Values.global.gfsUser .Values.global.gfsUser.username }}
+{{- $saName = .Values.global.gfsUser.username }}
+{{- end }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -16,7 +20,7 @@ metadata:
   labels: {{ include "vm.labels" $ctx | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "vm.fullname" $ctx }}
+    name: {{ $saName }}
     namespace: {{ include "vm.namespace" . }}
 roleRef:
   kind: ClusterRole

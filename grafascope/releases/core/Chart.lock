@@ -1,0 +1,15 @@
+dependencies:
+- name: grafana
+  repository: file://../../services/grafana
+  version: 0.1.0
+- name: victoria-metrics
+  repository: file://../../services/victoria-metrics
+  version: 0.1.0
+- name: victoria-logs
+  repository: file://../../services/victoria-logs
+  version: 0.1.0
+- name: victoria-traces
+  repository: file://../../services/victoria-traces
+  version: 0.1.0
+digest: sha256:56a43f7a73d5855cb9d02834fcd9569035efc3fa64733e1f540923ff8944b776
+generated: "2026-01-27T11:50:00.91258Z"

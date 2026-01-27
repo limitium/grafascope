@@ -18,8 +18,8 @@ apiVersion: v2
 appVersion: v1.43.1
 dependencies:
 - name: victoria-metrics-common
-  repository: https://victoriametrics.github.io/helm-charts
-  version: 0.0.*
+  repository: "file://charts/victoria-metrics-common"
+  version: 0.0.45
 description: VictoriaLogs Collector - collects logs from Kubernetes containers and
   stores them to VictoriaLogs
 home: https://github.com/VictoriaMetrics/helm-charts

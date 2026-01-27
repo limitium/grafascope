@@ -18,17 +18,17 @@ data:
       {{- toYaml $targets | nindent 6 }}
       {{- else }}
       - job_name: victoria-metrics
-        metrics_path: {{ printf "%s/metrics" .Values.global.paths.victoriaMetrics | quote }}
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-metrics") | quote }}
         static_configs:
-          - targets: ["victoria-metrics:{{ .Values.global.ports.victoriaMetrics }}"]
+          - targets: ["victoria-metrics:{{ index .Values.global.ports "victoria-metrics" }}"]
       - job_name: victoria-logs
-        metrics_path: {{ printf "%s/metrics" .Values.global.paths.victoriaLogs | quote }}
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-logs") | quote }}
         static_configs:
-          - targets: ["victoria-logs:{{ .Values.global.ports.victoriaLogs }}"]
+          - targets: ["victoria-logs:{{ index .Values.global.ports "victoria-logs" }}"]
       - job_name: victoria-traces
-        metrics_path: {{ printf "%s/metrics" .Values.global.paths.victoriaTraces | quote }}
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-traces") | quote }}
         static_configs:
-          - targets: ["victoria-traces:{{ .Values.global.ports.victoriaTraces }}"]
+          - targets: ["victoria-traces:{{ index .Values.global.ports "victoria-traces" }}"]
       - job_name: grafana
         metrics_path: {{ printf "%s/metrics" .Values.global.paths.grafana | quote }}
         static_configs:

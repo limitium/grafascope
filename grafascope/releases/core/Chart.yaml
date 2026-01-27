@@ -1,0 +1,22 @@
+apiVersion: v2
+name: grafascope-core
+description: Grafascope core chart (Grafana + VictoriaMetrics/Logs/Traces)
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: grafana
+    version: 0.1.0
+    repository: "file://../../services/grafana"
+
+  - name: victoria-metrics
+    version: 0.1.0
+    repository: "file://../../services/victoria-metrics"
+
+  - name: victoria-logs
+    version: 0.1.0
+    repository: "file://../../services/victoria-logs"
+
+  - name: victoria-traces
+    version: 0.1.0
+    repository: "file://../../services/victoria-traces"

@@ -1,0 +1,60 @@
+
+{{- if .Values.datasources.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "grafana.fullname" . }}-datasources
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        type: prometheus
+        uid: VictoriaMetrics
+        access: proxy
+        {{- $vmPort := default 8428 (index .Values.global.ports "victoria-metrics") }}
+        {{- $vmPath := default "" (index .Values.global.paths "victoria-metrics") }}
+        {{- $vmUrl := printf "%s://victoria-metrics:%v%s" (default "http" .Values.global.protocol) $vmPort $vmPath }}
+        url: {{ default $vmUrl (index .Values.datasources "victoria-metrics-url") | quote }}
+        isDefault: true
+        jsonData:
+          prometheusType: Prometheus
+          prometheusVersion: 3.0.0
+      - name: VictoriaLogs
+        type: victoriametrics-logs-datasource
+        uid: VictoriaLogs
+        access: proxy
+        {{- $vlPort := default 9428 (index .Values.global.ports "victoria-logs") }}
+        {{- $vlPath := default "" (index .Values.global.paths "victoria-logs") }}
+        {{- $vlUrl := printf "%s://victoria-logs:%v%s" (default "http" .Values.global.protocol) $vlPort $vlPath }}
+        url: {{ default $vlUrl (index .Values.datasources "victoria-logs-url") | quote }}
+      - name: VictoriaTraces
+        type: jaeger
+        uid: VictoriaTraces
+        access: proxy
+        {{- $vtPort := default 9410 (index .Values.global.ports "victoria-traces") }}
+        {{- $vtPath := default "" (index .Values.global.paths "victoria-traces") }}
+        {{- $vtJaegerPath := printf "%s/select/jaeger" $vtPath }}
+        {{- $vtUrl := printf "%s://victoria-traces:%v%s" (default "http" .Values.global.protocol) $vtPort $vtJaegerPath }}
+        url: {{ default $vtUrl (index .Values.datasources "victoria-traces-url") | quote }}
+        jsonData:
+          nodeGraph:
+            enabled: true
+          tracesToLogs:
+            datasourceUid: VictoriaLogs
+            tags: ['job', 'instance', 'pod', 'namespace']
+            mappedTags: [{ key: 'service.name', value: 'service' }]
+            mapTagNamesEnabled: false
+            spanStartTimeShift: 0s
+            spanEndTimeShift: 0s
+            filterByTraceID: false
+            filterBySpanID: false
+          tracesToMetrics:
+            datasourceUid: VictoriaMetrics
+            tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+            queries:
+              - name: Sample Query
+                query: sum(rate(traces_span_metrics_calls_total{$$__tags}[$$__rate_interval]))
+{{- end -}}

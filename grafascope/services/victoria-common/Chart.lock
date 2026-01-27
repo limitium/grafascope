@@ -3,4 +3,4 @@ dependencies:
   repository: file://../../libs/grafascope-common
   version: 0.1.0
 digest: sha256:719446da3749aa0cd114647463f887a4bdee6728076625f0aaa70bd6fe3159ee
-generated: "2026-01-27T11:50:03.797972Z"
+generated: "2026-01-27T11:50:02.849509Z"

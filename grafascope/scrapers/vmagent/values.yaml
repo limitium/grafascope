@@ -1,24 +1,23 @@
-enabled: true
+enabled: true # enable vmagent deployment
 
 service:
   enabled: true
   type: ClusterIP
-  port: 8429
+  port: "" # defaults to global.ports.vmagent when empty
 
 ingress:
+  # Ingress is disabled by default in the component chart.
   enabled: false
   className: nginx
   annotations: {}
   tls: []
 
-replicaCount: 1
+replicaCount: 1 # vmagent replicas
 
 remoteWriteUrl: "" # when empty, built from global protocol/ports/paths
 
-scrapeInterval: 30s
+scrapeInterval: 30s # global scrape interval
 scrapeTargets: [] # optional override; when empty, use global defaults
-
-resources: {}
 podAnnotations: {}
 nodeSelector: {}
 tolerations: []

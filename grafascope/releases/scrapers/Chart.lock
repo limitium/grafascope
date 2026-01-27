@@ -1,0 +1,9 @@
+dependencies:
+- name: vmagent
+  repository: file://../../scrapers/vmagent
+  version: 0.1.0
+- name: victoria-logs-collector
+  repository: file://../../scrapers/victoria-logs-collector
+  version: 0.2.7
+digest: sha256:65c8b8303cbc79999abe850fedb53f358e4d0cf02fbdbeafc58d5417c6e370ee
+generated: "2026-01-27T11:14:22.996468Z"

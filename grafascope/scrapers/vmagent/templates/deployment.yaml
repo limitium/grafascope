@@ -35,11 +35,13 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           args:
             - "-promscrape.config=/etc/vmagent/scrape.yml"
+            - "-remoteWrite.tmpDataPath=/vmagent-data"
             {{- $remoteWriteUrl := .Values.remoteWriteUrl }}
             {{- if not $remoteWriteUrl }}
-            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) .Values.global.ports.victoriaMetrics .Values.global.paths.victoriaMetrics }}
+            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) (index .Values.global.ports "victoria-metrics") (index .Values.global.paths "victoria-metrics") }}
             {{- end }}
             - {{ printf "-remoteWrite.url=%s" $remoteWriteUrl | quote }}
             {{- if .Values.global.paths.vmagent }}
@@ -52,6 +54,8 @@ spec:
           volumeMounts:
             - name: scrape
               mountPath: /etc/vmagent
+            - name: vmagent-data
+              mountPath: /vmagent-data
           {{- $healthPath := "/health" }}
           {{- if .Values.global.paths.vmagent }}
           {{- $healthPath = printf "%s/health" .Values.global.paths.vmagent }}
@@ -74,5 +78,8 @@ spec:
         - name: scrape
           configMap:
             name: {{ include "vmagent.fullname" . }}-scrape
+        - name: vmagent-data
+          emptyDir:
+            medium: Memory
 {{- end }}
 

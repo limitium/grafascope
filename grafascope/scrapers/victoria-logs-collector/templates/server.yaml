@@ -21,7 +21,11 @@ spec:
       {{- with .Values.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
-      serviceAccountName: {{ default (include "vm.fullname" $ctx) .Values.serviceAccount.name }}
+      {{- $saName := .Values.serviceAccount.name }}
+      {{- if and .Values.global .Values.global.gfsUser .Values.global.gfsUser.username }}
+      {{- $saName = .Values.global.gfsUser.username }}
+      {{- end }}
+      serviceAccountName: {{ default (include "vm.fullname" $ctx) $saName }}
       {{- with .Values.nodeSelector }}
       nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}

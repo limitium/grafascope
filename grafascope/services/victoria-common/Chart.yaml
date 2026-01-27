@@ -1,7 +1,7 @@
 apiVersion: v2
-name: vmagent
-description: Minimal vmagent chart for scraping and remote_write
-type: application
+name: victoria-common
+description: Shared Helm templates for Victoria charts
+type: library
 version: 0.1.0
 dependencies:
   - name: grafascope-common

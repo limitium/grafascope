@@ -1,0 +1,125 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "grafana.fullname" . }}
+  labels:
+    {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "grafana.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "grafana.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+    spec:
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: grafana
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          ports:
+            - name: http
+              {{- $port := default "" .Values.global.ports.grafana }}
+              containerPort: {{ default .Values.service.port $port }}
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-admin" (include "grafana.fullname" .)) .Values.admin.existingSecret }}
+                  key: admin-user
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-admin" (include "grafana.fullname" .)) .Values.admin.existingSecret }}
+                  key: admin-password
+            {{- if and .Values.pluginsInstall .Values.plugins }}
+            - name: GF_INSTALL_PLUGINS
+              value: {{ join "," .Values.plugins | quote }}
+            {{- end }}
+            {{- $domain := .Values.server.domain }}
+            {{- if .Values.global.domain }}
+            {{- $domain = .Values.global.domain }}
+            {{- end }}
+            {{- if $domain }}
+            - name: GF_SERVER_DOMAIN
+              value: {{ $domain | quote }}
+            {{- end }}
+            {{- $rootUrl := .Values.server.rootUrl }}
+            {{- if and (not $rootUrl) .Values.global.domain .Values.global.paths.grafana }}
+            {{- $rootUrl = printf "%s://%s%s/" (default "http" .Values.global.protocol) .Values.global.domain .Values.global.paths.grafana }}
+            {{- end }}
+            {{- if $rootUrl }}
+            - name: GF_SERVER_ROOT_URL
+              value: {{ $rootUrl | quote }}
+            {{- end }}
+            {{- if .Values.server.serveFromSubPath }}
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            {{- end }}
+          volumeMounts:
+            {{- if .Values.datasources.enabled }}
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            {{- end }}
+            {{- if .Values.dashboards.enabled }}
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+            - name: dashboards-provisioning
+              mountPath: /etc/grafana/provisioning/dashboards
+            {{- end }}
+            {{- if .Values.persistence.enabled }}
+            - name: storage
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.datasources.enabled }}
+        - name: datasources
+          configMap:
+            name: {{ include "grafana.fullname" . }}-datasources
+        {{- end }}
+        {{- if .Values.dashboards.enabled }}
+        - name: dashboards
+          configMap:
+            name: {{ include "grafana.fullname" . }}-dashboards
+        - name: dashboards-provisioning
+          configMap:
+            name: {{ include "grafana.fullname" . }}-dashboard-provisioning
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-storage" (include "grafana.fullname" .)) .Values.persistence.existingClaim }}
+        {{- end }}
