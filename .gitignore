@@ -1,1 +1,3 @@
 **/charts/*.tgz
+.idea
+.DS_Store

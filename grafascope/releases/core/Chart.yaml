@@ -5,6 +5,10 @@ type: application
 version: 0.1.0
 
 dependencies:
+  - name: grafascope-common
+    version: 0.1.0
+    repository: "file://../../libs/grafascope-common"
+
   - name: grafana
     version: 0.1.0
     repository: "file://../../services/grafana"

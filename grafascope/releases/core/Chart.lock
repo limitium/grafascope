@@ -1,4 +1,7 @@
 dependencies:
+- name: grafascope-common
+  repository: file://../../libs/grafascope-common
+  version: 0.1.0
 - name: grafana
   repository: file://../../services/grafana
   version: 0.1.0
@@ -11,5 +14,5 @@ dependencies:
 - name: victoria-traces
   repository: file://../../services/victoria-traces
   version: 0.1.0
-digest: sha256:56a43f7a73d5855cb9d02834fcd9569035efc3fa64733e1f540923ff8944b776
-generated: "2026-01-27T11:50:00.91258Z"
+digest: sha256:9a60e8dc28b69cef2bcec02077bd78277113135d8a3af60c17a67bf2dd724e8d
+generated: "2026-01-27T14:07:23.132715Z"

@@ -5,8 +5,5 @@ description: Minimal Grafana chart for Grafascope
 type: application
 version: 0.1.0
 appVersion: "11.2.0"
-dependencies:
-  - name: grafascope-common
-    version: 0.1.0
-    repository: "file://../../libs/grafascope-common"
+dependencies: []
   
