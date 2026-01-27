@@ -55,6 +55,10 @@ spec:
       {{- with (.Values.imagePullSecrets | default (.Values.global).imagePullSecrets) }}
       imagePullSecrets: {{ toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsUser: 65534
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -74,6 +78,9 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
           {{- $args := .Values.args }}
           {{- $pathPrefix := .Values.httpPathPrefix }}
           {{- if not $pathPrefix }}

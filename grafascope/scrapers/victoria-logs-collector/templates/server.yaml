@@ -85,6 +85,5 @@ spec:
           hostPath:
             path: /var/lib
         - name: vl-collector-data
-          hostPath:
-            path: {{ $args.tmpDataPath }}
+          emptyDir: {}
         {{- include "vm.license.volume" . | nindent 8 }}

@@ -33,7 +33,7 @@ grafana:
   # Custom Grafana image with offline plugins.
   image:
     repository: limitium/grafanaplg
-    tag: 11.2.0-with-vl
+    tag: 11.2.0-with-vl.2
     pullPolicy: IfNotPresent
   ingress:
     enabled: true

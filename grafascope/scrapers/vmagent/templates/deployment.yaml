@@ -39,6 +39,9 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
           args:
             - "-promscrape.config=/etc/vmagent/scrape.yml"
             - "-remoteWrite.tmpDataPath=/vmagent-data"

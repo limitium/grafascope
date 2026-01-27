@@ -130,6 +130,9 @@ podSecurityContext:
 securityContext:
   enabled: true
   readOnlyRootFilesystem: true
+  runAsNonRoot: false
+  runAsUser: 0
+  runAsGroup: 0
   # capabilities:
   #   drop:
   #     - ALL

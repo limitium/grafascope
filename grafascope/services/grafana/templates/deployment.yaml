@@ -32,6 +32,8 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+        fsGroup: 472
       containers:
         - name: grafana
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -39,6 +41,8 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 472
           ports:
             - name: http
               {{- $port := default "" .Values.global.ports.grafana }}
