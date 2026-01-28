@@ -1,0 +1,63 @@
+{
+  "uid": "grafascope-scrape-targets",
+  "title": "Grafascope Scrape Targets",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "vmagent scrape targets",
+      "description": "Target health from the vmagent scrape results (job + instance).",
+      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
+      "targets": [
+        {
+          "expr": "up",
+          "refId": "A",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "includeByName": { "instance": true, "Value": true },
+            "renameByName": { "Value": "status" }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "status" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] } },
+              { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } } } ] }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 12 }
+    }
+  ]
+}

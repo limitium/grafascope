@@ -1,0 +1,5 @@
+apiVersion: v2
+name: grafascope-demo-apps
+description: Demo apps for Grafascope monitoring validation
+type: application
+version: 0.1.0

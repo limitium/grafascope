@@ -1,6 +1,10 @@
 service:
   type: ClusterIP
   port: 9410
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
 
 ingress:
   enabled: false
@@ -20,6 +24,8 @@ persistence:
 args:
   - "-storageDataPath=/vtraces"
   - "-httpListenAddr=:9410"
+  - "-otlpGRPCListenAddr=:4317"
+  - "-otlpGRPC.tls=false"
 httpPathPrefix: ""
 healthPath: ""
 podAnnotations: {}

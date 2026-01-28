@@ -58,6 +58,22 @@ spec:
                 secretKeyRef:
                   name: {{ default (printf "%s-admin" (include "grafana.fullname" .)) .Values.admin.existingSecret }}
                   key: admin-password
+            - name: GF_DATABASE_TYPE
+              value: "sqlite3"
+            - name: GF_DATABASE_WAL
+              value: "true"
+            - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+              value: "false"
+            - name: GF_ANALYTICS_REPORTING_ENABLED
+              value: "false"
+            - name: GF_ANALYTICS_FEEDBACK_LINKS_ENABLED
+              value: "false"
+            - name: GF_NEWS_NEWS_FEED_ENABLED
+              value: "false"
+            - name: GF_PLUGINS_PLUGIN_ADMIN_ENABLED
+              value: "false"
+            - name: GF_PLUGINS_PUBLIC_KEY_RETRIEVAL_DISABLED
+              value: "true"
             {{- if and .Values.pluginsInstall .Values.plugins }}
             - name: GF_INSTALL_PLUGINS
               value: {{ join "," .Values.plugins | quote }}

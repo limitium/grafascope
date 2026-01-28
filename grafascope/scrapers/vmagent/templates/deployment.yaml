@@ -47,7 +47,7 @@ spec:
             - "-remoteWrite.tmpDataPath=/vmagent-data"
             {{- $remoteWriteUrl := .Values.remoteWriteUrl }}
             {{- if not $remoteWriteUrl }}
-            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) (index .Values.global.ports "victoria-metrics") (index .Values.global.paths "victoria-metrics") }}
+            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) (index .Values.global.ports "victoriaMetrics") (index .Values.global.paths "victoriaMetrics") }}
             {{- end }}
             - {{ printf "-remoteWrite.url=%s" $remoteWriteUrl | quote }}
             {{- if .Values.global.paths.vmagent }}

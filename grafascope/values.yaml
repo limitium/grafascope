@@ -9,23 +9,26 @@ global:
   # Shared ingress subpaths (kebab-case keys).
   paths:
     grafana: /grafana
-    # Use kebab-case keys to match chart names.
-    victoria-metrics: /victoria-metrics
-    victoria-logs: /victoria-logs
-    victoria-traces: /victoria-traces
+    # Use camelCase keys to match vendored Victoria charts.
+    victoriaMetrics: /victoria-metrics
+    victoriaLogs: /victoria-logs
+    victoriaTraces: /victoria-traces
     vmagent: /vmagent
-  # Shared service ports (kebab-case keys).
+  # Shared service ports (camelCase keys).
   ports:
     grafana: 3000
-    # Use kebab-case keys to match chart names.
-    victoria-metrics: 8428
-    victoria-logs: 9428
-    victoria-traces: 9410
+    # Use camelCase keys to match vendored Victoria charts.
+    victoriaMetrics: 8428
+    victoriaLogs: 9428
+    victoriaTraces: 9410
+    # OTLP gRPC port for victoria-traces (ingestion).
+    victoriaTracesOtlpGrpc: 4317
     vmagent: 8429
   # Optional imagePullSecrets applied to all charts that support it.
   imagePullSecrets: []
   scrapers:
     # Optional global scrape targets for vmagent.
+    # Leave empty when using per-release vmagent.scrapeTargets.
     metricsTargets: []
 
 # Service and scraper overrides are centralized here.
@@ -33,8 +36,8 @@ grafana:
   # Custom Grafana image with offline plugins.
   image:
     repository: limitium/grafanaplg
-    tag: 11.2.0-with-vl.2
-    pullPolicy: IfNotPresent
+    tag: 11.2.0-with-vl.5
+    pullPolicy: Always
   ingress:
     enabled: true
     className: nginx
@@ -135,8 +138,16 @@ vmagent:
     pullPolicy: IfNotPresent
   ingress:
     enabled: true
-  # Optional per-release target overrides.
-  scrapeTargets: []
+  # Additional scrape targets (appended to default self-monitoring jobs).
+  # Default jobs (victoria-metrics, victoria-logs, victoria-traces, grafana) are always included.
+  scrapeTargets:
+    - job_name: demo-apps
+      metrics_path: /metrics
+      static_configs:
+        - targets:
+            # These are the default service names created by the demo-apps chart.
+            - demo-apps-grafascope-demo-apps-service-a:8000
+            - demo-apps-grafascope-demo-apps-service-b:8000
   # Centralized resources (override chart defaults).
   resources:
     requests:
@@ -161,8 +172,8 @@ victoria-logs-collector:
     annotations: {}
     name: gfs-user # defaults to global.gfsUser.username when set
   remoteWrite:
-    # When empty, URL is derived from global protocol/ports/paths.
-    - url: "" # built from global protocol/ports/paths when empty
+    # Explicit URL to VictoriaLogs insert endpoint (includes http.pathPrefix).
+    - url: "http://victoria-logs:9428/victoria-logs/insert/native"
       headers: {}
   collector:
     # Basic field mapping for log parsing.

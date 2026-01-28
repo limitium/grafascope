@@ -10,29 +10,28 @@ data:
     global:
       scrape_interval: {{ .Values.scrapeInterval | quote }}
     scrape_configs:
+      - job_name: victoria-metrics
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaMetrics") | quote }}
+        static_configs:
+          - targets: ["victoria-metrics:{{ index .Values.global.ports "victoriaMetrics" }}"]
+      - job_name: victoria-logs
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaLogs") | quote }}
+        static_configs:
+          - targets: ["victoria-logs:{{ index .Values.global.ports "victoriaLogs" }}"]
+      - job_name: victoria-traces
+        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaTraces") | quote }}
+        static_configs:
+          - targets: ["victoria-traces:{{ index .Values.global.ports "victoriaTraces" }}"]
+      - job_name: grafana
+        metrics_path: {{ printf "%s/metrics" .Values.global.paths.grafana | quote }}
+        static_configs:
+          - targets: ["grafana:{{ .Values.global.ports.grafana }}"]
       {{- $targets := .Values.scrapeTargets }}
       {{- if not $targets }}
       {{- $targets = .Values.global.scrapers.metricsTargets }}
       {{- end }}
       {{- if $targets }}
       {{- toYaml $targets | nindent 6 }}
-      {{- else }}
-      - job_name: victoria-metrics
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-metrics") | quote }}
-        static_configs:
-          - targets: ["victoria-metrics:{{ index .Values.global.ports "victoria-metrics" }}"]
-      - job_name: victoria-logs
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-logs") | quote }}
-        static_configs:
-          - targets: ["victoria-logs:{{ index .Values.global.ports "victoria-logs" }}"]
-      - job_name: victoria-traces
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoria-traces") | quote }}
-        static_configs:
-          - targets: ["victoria-traces:{{ index .Values.global.ports "victoria-traces" }}"]
-      - job_name: grafana
-        metrics_path: {{ printf "%s/metrics" .Values.global.paths.grafana | quote }}
-        static_configs:
-          - targets: ["grafana:{{ .Values.global.ports.grafana }}"]
       {{- end }}
 {{- end }}
 

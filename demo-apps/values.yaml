@@ -1,0 +1,29 @@
+image:
+  repository: limitium/victoria-load
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serviceA:
+  name: service-a
+  port: 8000
+  targetServiceName: service-b
+  env:
+    SERVICE_NAME: service-a
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://victoria-traces:4317
+
+serviceB:
+  name: service-b
+  port: 8000
+  env:
+    SERVICE_NAME: service-b
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://victoria-traces:4317
+
+loadGenerator:
+  enabled: true
+  image:
+    repository: curlimages/curl
+    tag: latest
+    pullPolicy: IfNotPresent
+  command: []

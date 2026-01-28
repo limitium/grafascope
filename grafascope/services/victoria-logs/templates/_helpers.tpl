@@ -40,9 +40,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "victoria-logs.globalPath" -}}
-{{- default "" (index .Values.global.paths "victoria-logs") -}}
+{{- default "" (index .Values.global.paths "victoriaLogs") -}}
 {{- end -}}
 
 {{- define "victoria-logs.globalPort" -}}
-{{- default "" (index .Values.global.ports "victoria-logs") -}}
+{{- default "" (index .Values.global.ports "victoriaLogs") -}}
 {{- end -}}

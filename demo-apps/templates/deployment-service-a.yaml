@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.fullname" . }}-service-a
+  labels:
+    {{- include "demo.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: service-a
+      {{- include "demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: service-a
+        {{- include "demo.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: service-a
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.serviceA.port }}
+          env:
+            {{- range $key, $value := .Values.serviceA.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- $targetUrl := .Values.serviceA.targetServiceUrl }}
+            {{- if not $targetUrl }}
+            {{- $targetUrl = printf "http://%s-%s:%d" (include "demo.fullname" .) .Values.serviceA.targetServiceName (int .Values.serviceB.port) }}
+            {{- end }}
+            - name: TARGET_SERVICE_URL
+              value: {{ $targetUrl | quote }}

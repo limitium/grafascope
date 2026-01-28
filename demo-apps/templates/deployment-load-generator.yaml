@@ -1,0 +1,29 @@
+{{- if .Values.loadGenerator.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.fullname" . }}-load-generator
+  labels:
+    {{- include "demo.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: load-generator
+      {{- include "demo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: load-generator
+        {{- include "demo.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: load-generator
+          image: "{{ .Values.loadGenerator.image.repository }}:{{ .Values.loadGenerator.image.tag }}"
+          imagePullPolicy: {{ .Values.loadGenerator.image.pullPolicy }}
+          {{- $cmd := .Values.loadGenerator.command }}
+          {{- if not $cmd }}
+          {{- $cmd = list "/bin/sh" "-c" (printf "while true; do curl -s http://%s-service-a:%d > /dev/null; sleep 0.5; done" (include "demo.fullname" .) (int .Values.serviceA.port)) }}
+          {{- end }}
+          command: {{ toYaml $cmd | nindent 12 }}
+{{- end }}

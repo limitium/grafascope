@@ -14,6 +14,15 @@ spec:
       {{- $port := include (printf "%s.globalPort" .Chart.Name) . }}
       port: {{ default .Values.service.port $port }}
       targetPort: http
+    {{- with .Values.service.extraPorts }}
+    {{- range . }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      {{- if .targetPort }}
+      targetPort: {{ .targetPort }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
 {{- end }}
 
 {{- define "grafascope.common.victoriaIngress" -}}
@@ -100,6 +109,16 @@ spec:
             - name: http
               {{- $port := include (printf "%s.globalPort" .Chart.Name) . }}
               containerPort: {{ default .Values.service.port $port }}
+            {{- with .Values.service.extraPorts }}
+            {{- range . }}
+            - name: {{ .name }}
+              {{- $cport := .port }}
+              {{- if .targetPort }}
+              {{- $cport = .targetPort }}
+              {{- end }}
+              containerPort: {{ $cport }}
+            {{- end }}
+            {{- end }}
           volumeMounts:
             {{- if .Values.persistence.enabled }}
             - name: data
