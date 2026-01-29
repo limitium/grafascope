@@ -5,6 +5,9 @@ global:
   # Optional list of ingress hosts; when set, overrides global.domain.
   hosts: []
   protocol: http
+  image:
+    # Optional registry/prefix for all images (e.g. "registry.local/myrepo").
+    registry: ""
   # Optional global storage class for PVCs.
   storageClassName: ""
   # Shared ServiceAccount name for gfs-user + logs collector.

@@ -82,7 +82,11 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- $imageRepo := .Values.image.repository }}
+          {{- if (.Values.global).image.registry }}
+          {{- $imageRepo = printf "%s/%s" (trimSuffix "/" (.Values.global).image.registry) (trimPrefix "/" $imageRepo) }}
+          {{- end }}
+          image: "{{ $imageRepo }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
