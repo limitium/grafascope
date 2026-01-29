@@ -166,8 +166,9 @@ spec:
         resources:
           requests:
             storage: {{ .Values.persistence.size | quote }}
-        {{- if .Values.persistence.storageClassName }}
-        storageClassName: {{ .Values.persistence.storageClassName | quote }}
+        {{- $storageClassName := coalesce .Values.persistence.storageClassName (.Values.global).storageClassName }}
+        {{- if $storageClassName }}
+        storageClassName: {{ $storageClassName | quote }}
         {{- end }}
   {{- end }}
 {{- end }}

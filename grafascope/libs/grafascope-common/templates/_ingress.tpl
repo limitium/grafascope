@@ -20,17 +20,23 @@ metadata:
     {{- toYaml $ann | nindent 4 }}
 spec:
   ingressClassName: {{ .ingress.className }}
+  {{- $hosts := $ctx.Values.global.hosts }}
+  {{- if not $hosts }}
+  {{- $hosts = list (required "global.domain is required" $ctx.Values.global.domain) }}
+  {{- end }}
   rules:
-    - host: {{ required "global.domain is required" $ctx.Values.global.domain | quote }}
+    {{- range $host := $hosts }}
+    - host: {{ $host | quote }}
       http:
         paths:
-          - path: {{ required "ingress path is required" .path | quote }}
-            pathType: {{ default "Prefix" .pathType }}
+          - path: {{ required "ingress path is required" $.path | quote }}
+            pathType: {{ default "Prefix" $.pathType }}
             backend:
               service:
-                name: {{ .serviceName }}
+                name: {{ $.serviceName }}
                 port:
-                  number: {{ .servicePort }}
+                  number: {{ $.servicePort }}
+    {{- end }}
   {{- if .ingress.tls }}
   tls:
     {{- toYaml .ingress.tls | nindent 4 }}

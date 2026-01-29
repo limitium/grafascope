@@ -2,7 +2,11 @@
 global:
   # Ingress host/protocol used to build URLs.
   domain: localhost
+  # Optional list of ingress hosts; when set, overrides global.domain.
+  hosts: []
   protocol: http
+  # Optional global storage class for PVCs.
+  storageClassName: ""
   # Shared ServiceAccount name for gfs-user + logs collector.
   gfsUser:
     username: gfs-user
@@ -120,7 +124,6 @@ victoria-traces:
     # Storage for traces data.
     enabled: true
     size: 1Gi
-    storageClassName: ""
   # Centralized resources (override chart defaults).
   resources:
     requests:
