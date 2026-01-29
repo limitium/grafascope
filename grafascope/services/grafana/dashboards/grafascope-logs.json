@@ -1,0 +1,92 @@
+{
+  "uid": "grafascope-logs",
+  "title": "Grafascope Logs",
+  "schemaVersion": 42,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-30m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": ".*", "value": ".*", "selected": true },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": ".*", "value": ".*", "selected": true },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "pod",
+        "label": "Pod",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": ".*", "value": ".*", "selected": true },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "container",
+        "label": "Container",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": ".*", "value": ".*", "selected": true },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "log_search",
+        "label": "Log Search",
+        "type": "textbox",
+        "query": "",
+        "current": { "text": ".*", "value": ".*", "selected": true },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "Kubernetes Logs",
+      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "VictoriaLogs" },
+      "targets": [
+        {
+          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "VictoriaLogs" },
+          "editorMode": "code",
+          "expr": "kubernetes.pod_namespace:re(\"${namespace:raw}\") AND service:re(\"${service:raw}\") AND kubernetes.pod_name:re(\"${pod:raw}\") AND kubernetes.container_name:re(\"${container:raw}\") AND _msg:re(\"${log_search:raw}\")",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showControls": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 14 }
+    }
+  ]
+}

@@ -12,6 +12,8 @@ data:
       - name: grafascope
         folder: ""
         type: file
+        updateIntervalSeconds: 10
+        allowUiUpdates: false
         disableDeletion: false
         editable: true
         options:

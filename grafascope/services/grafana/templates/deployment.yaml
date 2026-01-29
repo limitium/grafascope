@@ -43,6 +43,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 472
+            runAsGroup: 472
           ports:
             - name: http
               {{- $port := default "" .Values.global.ports.grafana }}
@@ -58,6 +59,8 @@ spec:
                 secretKeyRef:
                   name: {{ default (printf "%s-admin" (include "grafana.fullname" .)) .Values.admin.existingSecret }}
                   key: admin-password
+            - name: GF_PATHS_PLUGINS
+              value: "/usr/share/grafana/plugins"
             - name: GF_DATABASE_TYPE
               value: "sqlite3"
             - name: GF_DATABASE_WAL
@@ -113,6 +116,8 @@ spec:
             - name: storage
               mountPath: {{ .Values.persistence.mountPath }}
             {{- end }}
+            - name: tmp
+              mountPath: /tmp
           readinessProbe:
             httpGet:
               path: /api/health
@@ -146,3 +151,5 @@ spec:
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-storage" (include "grafana.fullname" .)) .Values.persistence.existingClaim }}
         {{- end }}
+        - name: tmp
+          emptyDir: {}
