@@ -179,8 +179,12 @@ victoria-logs-collector:
     annotations: {}
     name: gfs-user # defaults to global.gfsUser.username when set
   remoteWrite:
-    # Explicit URL to VictoriaLogs insert endpoint (includes http.pathPrefix).
-    - url: "http://victoria-logs:9428/victoria-logs/insert/native"
+    # Explicit URL to VictoriaLogs insert endpoint.
+    # Include the namespace prefix when http.pathPrefix is enabled:
+    #   http://victoria-logs:9428/<namespace>/victoria-logs/insert/native
+    # For the default namespace used here:
+    #   http://victoria-logs:9428/grafascope/victoria-logs/insert/native
+    - url: "http://victoria-logs:9428/grafascope/victoria-logs/insert/native"
       headers: {}
   collector:
     # Basic field mapping for log parsing.

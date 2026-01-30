@@ -20,6 +20,10 @@ helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope 
 
 helm dependency update ./grafascope/releases/scrapers
 helm upgrade --install grafascope-scrapers ./grafascope/releases/scrapers -n grafascope -f grafascope/values.yaml
+
+# Optional demo apps (metrics/logs/traces generator)
+helm dependency update ./demo-apps
+helm upgrade --install demo-apps ./demo-apps -n grafascope -f grafascope/values.yaml
 ```
 
 If you install a service or scraper chart directly, run `helm dependency update` in that
@@ -36,7 +40,7 @@ charts live under `grafascope/libs`.
 log collector ServiceAccount name is sourced from the same global value.
 
 Default ingress is configured for a single domain (`localhost`) with subpaths.
-Use the `global.*` block in `grafascope/values.yaml` to set domain, protocol,
+Use the `global.*` block in `grafascope/values.yaml` to set hosts, protocol,
 paths, and ports in one place. Service charts assume global values.
 
 ## Structure
@@ -61,11 +65,13 @@ grafascope/
     victoria-common/
 ```
 
-- `/grafana`
-- `/victoria-metrics`
-- `/victoria-logs`
-- `/victoria-traces`
-- `/vmagent`
+Ingress paths are namespace-prefixed:
+
+- `/<namespace>/grafana`
+- `/<namespace>/victoria-metrics`
+- `/<namespace>/victoria-logs`
+- `/<namespace>/victoria-traces`
+- `/<namespace>/vmagent`
 
 Optional: override the host and/or paths at install time:
 
@@ -74,9 +80,9 @@ helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope 
   -f grafascope/values.yaml \
   --set global.domain=example.local \
   --set global.paths.grafana=/grafana \
-  --set global.paths.victoria-metrics=/victoria-metrics \
-  --set global.paths.victoria-logs=/victoria-logs \
-  --set global.paths.victoria-traces=/victoria-traces
+  --set global.paths.victoriaMetrics=/victoria-metrics \
+  --set global.paths.victoriaLogs=/victoria-logs \
+  --set global.paths.victoriaTraces=/victoria-traces
 ```
 
 ## Services and ports
@@ -100,7 +106,7 @@ kubectl rollout status deployment/vmagent -n grafascope
 kubectl rollout status statefulset/victoria-metrics -n grafascope
 kubectl rollout status statefulset/victoria-logs -n grafascope
 kubectl rollout status statefulset/victoria-traces -n grafascope
-kubectl rollout status daemonset/victoria-logs-collector -n grafascope
+kubectl rollout status daemonset/grafascope-scrapers-victoria-logs-collector -n grafascope
 
 # Uninstall
 helm uninstall grafascope-scrapers -n grafascope
@@ -111,14 +117,14 @@ helm uninstall gfs-user -n grafascope
 ## Ingest data (via Ingress)
 
 These examples assume the default single-domain ingress (`localhost`) with
-subpaths. Replace host/path to match your `global.*` values.
+namespace-prefixed subpaths. Replace host/path to match your `global.*` values.
 
 ### Metrics (Prometheus remote_write)
 
 Send remote_write to VictoriaMetrics:
 
 ```
-http://localhost/victoria-metrics/api/v1/write
+http://localhost/<namespace>/victoria-metrics/api/v1/write
 ```
 
 ### Logs (VictoriaLogs)
@@ -126,24 +132,28 @@ http://localhost/victoria-metrics/api/v1/write
 VictoriaLogs accepts log insert requests under `/insert/*`. For example:
 
 ```
-http://localhost/victoria-logs/insert/jsonline
+http://localhost/<namespace>/victoria-logs/insert/jsonline
 ```
+
+The collector remote write must target `/insert/native` and include the namespace
+prefix when using `http.pathPrefix`.
 
 ### Traces (VictoriaTraces, OTLP HTTP)
 
 OTLP HTTP traces endpoint:
 
 ```
-http://localhost/victoria-traces/insert/opentelemetry/v1/traces
+http://localhost/<namespace>/victoria-traces/insert/opentelemetry/v1/traces
 ```
 
 ## Values overview
 
 - `grafana.ingress.*`: enable/shape Ingress and hosts.
-- `global.domain`: shared ingress host for all services.
+- `global.domain`/`global.hosts`: shared ingress host(s) for all services.
 - `global.protocol`: protocol for building URLs for Grafana and datasources.
-- `global.paths.*`: shared subpaths for ingress routing and app prefixes (kebab-case keys like `victoria-metrics`).
+- `global.paths.*`: shared subpaths for ingress routing and app prefixes (camelCase keys like `victoriaMetrics`).
 - `global.gfsUser.username`: shared ServiceAccount name for gfs-user and logs collector.
+- `gfs-user.rbac.clusterWide`: must be `true` if the collector uses node metadata (required to start).
 - `global.scrapers.metricsTargets`: optional global scrape targets for vmagent.
 - `grafana.resources`, `victoria-*.resources`, `vmagent.resources`: centralized resource defaults in this file.
 - `grafana.server.*`: configure Grafana subpath serving.
@@ -155,4 +165,4 @@ http://localhost/victoria-traces/insert/opentelemetry/v1/traces
 - `victoria-*.persistence.existingClaim`: use an existing PVC instead of creating one.
 - `nodeSelector`, `tolerations`, `affinity`: scheduling controls per chart.
 - `vmagent.ingress.*`: expose vmagent under `global.paths.vmagent`.
-- `victoria-logs-collector.*`: log collector config (DaemonSet) and `remoteWrite`.
+- `victoria-logs-collector.*`: log collector config (DaemonSet) and `remoteWrite` (use `/insert/native` and include namespace path prefix when enabled).
