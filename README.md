@@ -43,6 +43,92 @@ Default ingress is configured for a single domain (`localhost`) with subpaths.
 Use the `global.*` block in `grafascope/values.yaml` to set hosts, protocol,
 paths, and ports in one place. Service charts assume global values.
 
+## gfs-user RBAC (copy/paste)
+
+Use this if you want to create the ServiceAccount + RBAC manually in the Kubernetes UI
+instead of installing the `gfs-user` chart. This mirrors the default `gfs-user` chart
+permissions (cluster-wide).
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gfs-user
+  namespace: grafascope
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gfs-user-role
+rules:
+  - apiGroups:
+      - ""
+      - apps
+      - autoscaling
+      - batch
+      - extensions
+      - policy
+      - rbac.authorization.k8s.io
+    resources:
+      - pods
+      - componentstatuses
+      - configmaps
+      - daemonsets
+      - deployments
+      - deployments/scale
+      - events
+      - endpoints
+      - horizontalpodautoscalers
+      - ingress
+      - jobs
+      - cronjobs
+      - limitranges
+      - namespaces
+      - nodes
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - replicasets
+      - replicationcontrollers
+      - serviceaccounts
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gfs-user-binding
+subjects:
+  - kind: ServiceAccount
+    name: gfs-user
+    namespace: grafascope
+roleRef:
+  kind: ClusterRole
+  name: gfs-user-role
+  apiGroup: rbac.authorization.k8s.io
+```
+
+If you want namespace-only access, replace `ClusterRole`/`ClusterRoleBinding` with
+`Role`/`RoleBinding` and remove cluster-scoped resources like `nodes`/`namespaces`.
+For a minimal collector-only RBAC, you can reduce the rules to just:
+
+```yaml
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "namespaces", "pods"]
+    verbs: ["get", "list", "watch"]
+```
+
+Node access is required for the collector to start; remove `nodes` only if you
+disable node metadata and accept missing node-based filters.
+
 ## Structure
 
 ```
