@@ -3,6 +3,7 @@ global:
   # Ingress host/protocol used to build URLs.
   domain: localhost
   # Optional list of ingress hosts; when set, overrides global.domain.
+  # Use a list of host strings (e.g., ["qwe.asd", "foo.bar"]).
   hosts: []
   protocol: http
   image:

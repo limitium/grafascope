@@ -26,7 +26,11 @@ spec:
   {{- end }}
   rules:
     {{- range $host := $hosts }}
-    - host: {{ $host | quote }}
+    {{- $hostName := $host }}
+    {{- if kindIs "map" $host }}
+    {{- $hostName = $host.host }}
+    {{- end }}
+    - host: {{ $hostName | quote }}
       http:
         paths:
           - path: {{ required "ingress path is required" $.path | quote }}
