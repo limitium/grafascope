@@ -99,7 +99,7 @@ spec:
           {{- if not $pathPrefix }}
           {{- $globalPath := include (printf "%s.globalPath" .Chart.Name) . }}
           {{- if $globalPath }}
-          {{- $pathPrefix = $globalPath }}
+          {{- $pathPrefix = include "grafascope.pathWithNamespace" (dict "path" $globalPath "namespace" .Release.Namespace) }}
           {{- end }}
           {{- end }}
           args:
@@ -132,7 +132,7 @@ spec:
           {{- if not $healthPath }}
           {{- $globalPath := include (printf "%s.globalPath" .Chart.Name) . }}
           {{- if $globalPath }}
-          {{- $healthPath = printf "%s/health" $globalPath }}
+          {{- $healthPath = printf "%s/health" (include "grafascope.pathWithNamespace" (dict "path" $globalPath "namespace" .Release.Namespace)) }}
           {{- end }}
           {{- end }}
           {{- if not $healthPath }}
