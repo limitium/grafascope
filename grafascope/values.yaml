@@ -45,7 +45,7 @@ grafana:
   image:
     repository: limitium/grafanaplg
     tag: 11.2.0-with-vl.5
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   ingress:
     enabled: true
     className: nginx

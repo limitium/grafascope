@@ -11,19 +11,19 @@ data:
       scrape_interval: {{ .Values.scrapeInterval | quote }}
     scrape_configs:
       - job_name: victoria-metrics
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaMetrics") | quote }}
+        metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" (index .Values.global.paths "victoriaMetrics") "namespace" .Release.Namespace)) | quote }}
         static_configs:
           - targets: ["victoria-metrics:{{ index .Values.global.ports "victoriaMetrics" }}"]
       - job_name: victoria-logs
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaLogs") | quote }}
+        metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" (index .Values.global.paths "victoriaLogs") "namespace" .Release.Namespace)) | quote }}
         static_configs:
           - targets: ["victoria-logs:{{ index .Values.global.ports "victoriaLogs" }}"]
       - job_name: victoria-traces
-        metrics_path: {{ printf "%s/metrics" (index .Values.global.paths "victoriaTraces") | quote }}
+        metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" (index .Values.global.paths "victoriaTraces") "namespace" .Release.Namespace)) | quote }}
         static_configs:
           - targets: ["victoria-traces:{{ index .Values.global.ports "victoriaTraces" }}"]
       - job_name: grafana
-        metrics_path: {{ printf "%s/metrics" .Values.global.paths.grafana | quote }}
+        metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace)) | quote }}
         static_configs:
           - targets: ["grafana:{{ .Values.global.ports.grafana }}"]
       {{- $targets := .Values.scrapeTargets }}

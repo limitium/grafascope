@@ -51,11 +51,13 @@ spec:
             - "-remoteWrite.tmpDataPath=/vmagent-data"
             {{- $remoteWriteUrl := .Values.remoteWriteUrl }}
             {{- if not $remoteWriteUrl }}
-            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) (index .Values.global.ports "victoriaMetrics") (index .Values.global.paths "victoriaMetrics") }}
+            {{- $vmPath := include "grafascope.pathWithNamespace" (dict "path" (index .Values.global.paths "victoriaMetrics") "namespace" .Release.Namespace) }}
+            {{- $remoteWriteUrl = printf "%s://victoria-metrics:%v%s/api/v1/write" (default "http" .Values.global.protocol) (index .Values.global.ports "victoriaMetrics") $vmPath }}
             {{- end }}
             - {{ printf "-remoteWrite.url=%s" $remoteWriteUrl | quote }}
             {{- if .Values.global.paths.vmagent }}
-            - {{ printf "-http.pathPrefix=%s" .Values.global.paths.vmagent | quote }}
+            {{- $vmagentPath := include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.vmagent "namespace" .Release.Namespace) }}
+            - {{ printf "-http.pathPrefix=%s" $vmagentPath | quote }}
             {{- end }}
           ports:
             - name: http
@@ -68,7 +70,8 @@ spec:
               mountPath: /vmagent-data
           {{- $healthPath := "/health" }}
           {{- if .Values.global.paths.vmagent }}
-          {{- $healthPath = printf "%s/health" .Values.global.paths.vmagent }}
+          {{- $vmagentHealthPath := include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.vmagent "namespace" .Release.Namespace) }}
+          {{- $healthPath = printf "%s/health" $vmagentHealthPath }}
           {{- end }}
           readinessProbe:
             httpGet:

@@ -123,7 +123,8 @@
           {{- $port := default 9428 $ports.victoriaLogs }}
           {{- $paths := $global.paths | default dict }}
           {{- $path := default "" $paths.victoriaLogs }}
-          {{- $rwValue = printf "%s://victoria-logs:%v%s" $protocol $port $path }}
+          {{- $nsPath := include "grafascope.pathWithNamespace" (dict "path" $path "namespace" .Release.Namespace) }}
+          {{- $rwValue = printf "%s://victoria-logs:%v%s" $protocol $port $nsPath }}
         {{- end }}
         {{- $url := urlParse $rwValue }}
         {{- $_ = set $url "path" (ternary "/insert/native" $url.path (empty (trimPrefix "/" $url.path))) }}

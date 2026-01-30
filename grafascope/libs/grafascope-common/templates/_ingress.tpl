@@ -33,7 +33,7 @@ spec:
     - host: {{ $hostName | quote }}
       http:
         paths:
-          - path: {{ required "ingress path is required" $.path | quote }}
+          - path: {{ include "grafascope.pathWithNamespace" (dict "path" (required "ingress path is required" $.path) "namespace" $ctx.Release.Namespace) | quote }}
             pathType: {{ default "Prefix" $.pathType }}
             backend:
               service:

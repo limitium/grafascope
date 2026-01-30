@@ -40,7 +40,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "victoria-logs.globalPath" -}}
-{{- default "" (index .Values.global.paths "victoriaLogs") -}}
+{{- $path := default "" (index .Values.global.paths "victoriaLogs") -}}
+{{- include "grafascope.pathWithNamespace" (dict "path" $path "namespace" .Release.Namespace) -}}
 {{- end -}}
 
 {{- define "victoria-logs.globalPort" -}}

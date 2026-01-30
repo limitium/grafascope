@@ -95,7 +95,8 @@ spec:
             {{- end }}
             {{- $rootUrl := .Values.server.rootUrl }}
             {{- if and (not $rootUrl) .Values.global.domain .Values.global.paths.grafana }}
-            {{- $rootUrl = printf "%s://%s%s/" (default "http" .Values.global.protocol) .Values.global.domain .Values.global.paths.grafana }}
+            {{- $rootPath := include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace) }}
+            {{- $rootUrl = printf "%s://%s%s/" (default "http" .Values.global.protocol) .Values.global.domain $rootPath }}
             {{- end }}
             {{- if $rootUrl }}
             - name: GF_SERVER_ROOT_URL

@@ -15,7 +15,7 @@ data:
         uid: VictoriaMetrics
         access: proxy
         {{- $vmPort := default 8428 (index .Values.global.ports "victoriaMetrics") }}
-        {{- $vmPath := default "" (index .Values.global.paths "victoriaMetrics") }}
+        {{- $vmPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaMetrics")) "namespace" .Release.Namespace) }}
         {{- $vmUrl := printf "%s://victoria-metrics:%v%s" (default "http" .Values.global.protocol) $vmPort $vmPath }}
         url: {{ default $vmUrl (index .Values.datasources "victoria-metrics-url") | quote }}
         isDefault: true
@@ -27,7 +27,7 @@ data:
         uid: VictoriaLogs
         access: proxy
         {{- $vlPort := default 9428 (index .Values.global.ports "victoriaLogs") }}
-        {{- $vlPath := default "" (index .Values.global.paths "victoriaLogs") }}
+        {{- $vlPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaLogs")) "namespace" .Release.Namespace) }}
         {{- $vlUrl := printf "%s://victoria-logs:%v%s" (default "http" .Values.global.protocol) $vlPort $vlPath }}
         url: {{ default $vlUrl (index .Values.datasources "victoria-logs-url") | quote }}
       - name: VictoriaTraces
@@ -35,7 +35,7 @@ data:
         uid: VictoriaTraces
         access: proxy
         {{- $vtPort := default 9410 (index .Values.global.ports "victoriaTraces") }}
-        {{- $vtPath := default "" (index .Values.global.paths "victoriaTraces") }}
+        {{- $vtPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaTraces")) "namespace" .Release.Namespace) }}
         {{- $vtJaegerPath := printf "%s/select/jaeger" $vtPath }}
         {{- $vtUrl := printf "%s://victoria-traces:%v%s" (default "http" .Values.global.protocol) $vtPort $vtJaegerPath }}
         url: {{ default $vtUrl (index .Values.datasources "victoria-traces-url") | quote }}
