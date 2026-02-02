@@ -1,0 +1,133 @@
+@startuml
+title Grafascope (core + vmagent + fluent-bit + demo-apps)
+
+skinparam shadowing false
+skinparam defaultFontName "Inter"
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 10
+skinparam dpi 150
+skinparam linetype ortho
+
+skinparam cloud {
+  BackgroundColor #F3F4F6
+  BorderColor #9CA3AF
+}
+
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #6366F1
+  FontColor #111827
+}
+
+skinparam database {
+  BackgroundColor #ECFDF5
+  BorderColor #10B981
+  FontColor #064E3B
+}
+
+skinparam frame {
+  BackgroundColor #FFFFFF
+  BorderColor #E5E7EB
+  FontColor #111827
+}
+
+skinparam package {
+  BackgroundColor #F9FAFB
+  BorderColor #D1D5DB
+  FontColor #111827
+}
+
+skinparam note {
+  BackgroundColor #FFFBEB
+  BorderColor #F59E0B
+  FontColor #92400E
+}
+
+skinparam ArrowColor #374151
+skinparam ArrowThickness 1.6
+
+top to bottom direction
+
+frame "Kubernetes namespace: grafascope" as ns {
+  together {
+    package "Demo apps" as demo #FEF3C7 {
+      component "service‑a\nDeployment" as svcA #EDE9FE
+      component "service‑b\nDeployment" as svcB #EDE9FE
+      component "load‑generator\nDeployment" as loadgen #EDE9FE
+      svcA -[hidden]right-> svcB
+    }
+
+    package "Scrapers" as scrapers #E0E7FF {
+      component "vmagent\nDeployment" as vmagent #DBEAFE
+      node "Fluent Bit\nDaemonSet" as fluentbit #DBEAFE
+      artifact "/var/log/containers/*.log\n(node log files)" as logfiles #FFF7ED
+      vmagent -[hidden]right-> fluentbit
+      fluentbit -[hidden]down-> logfiles
+    }
+
+    package "Core" as core #DCFCE7 {
+      component "Grafana\nDeployment" as grafana #E0F2FE
+      database "VictoriaMetrics\nStatefulSet" as vmetrics #ECFDF5
+      database "VictoriaLogs\nStatefulSet" as vlogs #ECFDF5
+      database "VictoriaTraces\nStatefulSet" as vtraces #ECFDF5
+      grafana -[hidden]down-> vmetrics
+      vmetrics -[hidden]right-> vlogs
+      vlogs -[hidden]right-> vtraces
+    }
+  }
+
+  demo -[hidden]right-> scrapers
+  scrapers -[hidden]right-> core
+}
+
+cloud "Ingress (nginx)\nnamespace‑prefixed paths" as ingress #F3F4F6
+ns -[hidden]down-> ingress
+
+' Ingress routes (from bottom)
+ingress -up[#2563EB]-> grafana : /<ns>/grafana
+ingress -up[#2563EB]-> vmetrics : /<ns>/victoria-metrics
+ingress -up[#2563EB]-> vlogs : /<ns>/victoria-logs
+ingress -up[#2563EB]-> vtraces : /<ns>/victoria-traces
+ingress -up[#2563EB]-> vmagent : /<ns>/vmagent
+
+' Pull (dashed)
+vmagent ..[#10B981]..> svcA : scrape /metrics
+vmagent ..[#10B981]..> svcB : scrape /metrics
+vmagent ..[#10B981]..> grafana : scrape /metrics
+vmagent ..[#10B981]..> vmetrics : scrape /metrics
+vmagent ..[#10B981]..> vlogs : scrape /metrics
+vmagent ..[#10B981]..> vtraces : scrape /metrics
+
+' Push (solid)
+vmagent -[#059669]-> vmetrics : remote_write
+fluentbit -[#F59E0B]-> vlogs : /insert/jsonline
+
+' Log source
+logfiles -[#F59E0B]-> fluentbit : tail
+
+' Traces (push)
+svcA -[#8B5CF6]-> vtraces : OTLP HTTP
+svcB -[#8B5CF6]-> vtraces : OTLP HTTP
+
+' Demo load: only service‑a
+loadgen -[#64748B]-> svcA : HTTP
+svcA -[#64748B]-> svcB : HTTP
+
+' Visualization (pull)
+grafana ..[#0EA5E9]..> vmetrics : Prometheus DS
+grafana ..[#0EA5E9]..> vlogs : VictoriaLogs DS
+grafana ..[#0EA5E9]..> vtraces : Jaeger DS
+
+note bottom of vlogs
+  Logs ingestion:
+  - Fluent Bit (tail files)
+  - vlagent (k8s metadata)
+end note
+
+note bottom of ingress
+  Paths are namespace‑prefixed, e.g.:
+  /grafascope/grafana
+  /grafascope/victoria‑logs
+end note
+
+@enduml
