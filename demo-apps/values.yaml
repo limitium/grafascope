@@ -12,6 +12,12 @@ serviceA:
   env:
     SERVICE_NAME: service-a
     OTEL_EXPORTER_OTLP_ENDPOINT: http://victoria-traces:4317
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      memory: 1Gi
 
 serviceB:
   name: service-b
@@ -19,6 +25,12 @@ serviceB:
   env:
     SERVICE_NAME: service-b
     OTEL_EXPORTER_OTLP_ENDPOINT: http://victoria-traces:4317
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      memory: 1Gi
 
 loadGenerator:
   enabled: true
@@ -27,3 +39,9 @@ loadGenerator:
     tag: latest
     pullPolicy: IfNotPresent
   command: []
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      memory: 1Gi

@@ -20,13 +20,6 @@ spec:
       {{- with (.Values.imagePullSecrets | default (.Values.global).imagePullSecrets) }}
       imagePullSecrets: {{ toYaml . | nindent 8 }}
       {{- end }}
-      {{- $saName := "" }}
-      {{- if and .Values.global .Values.global.gfsUser .Values.global.gfsUser.username }}
-      {{- $saName = .Values.global.gfsUser.username }}
-      {{- end }}
-      {{- if $saName }}
-      serviceAccountName: {{ $saName }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

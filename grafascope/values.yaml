@@ -211,6 +211,12 @@ victoria-logs-collector:
 fluent-bit:
   # Optional log tailer that does not use Kubernetes API.
   kind: DaemonSet
+  resources:
+    requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
+      memory: 1Gi
   securityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true

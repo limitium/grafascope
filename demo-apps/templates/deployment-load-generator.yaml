@@ -21,6 +21,14 @@ spec:
         - name: load-generator
           image: "{{ .Values.loadGenerator.image.repository }}:{{ .Values.loadGenerator.image.tag }}"
           imagePullPolicy: {{ .Values.loadGenerator.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          {{- with .Values.loadGenerator.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- $cmd := .Values.loadGenerator.command }}
           {{- if not $cmd }}
           {{- $cmd = list "/bin/sh" "-c" (printf "while true; do curl -s http://%s-service-a:%d > /dev/null; sleep 0.5; done" (include "demo.fullname" .) (int .Values.serviceA.port)) }}
