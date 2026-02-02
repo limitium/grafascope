@@ -21,3 +21,11 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version }}
 app.kubernetes.io/name: {{ include "demo.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+{{- define "demo.imageRepository" -}}
+{{- $repo := .repository -}}
+{{- if and $.Values.global $.Values.global.image $.Values.global.image.registry }}
+{{- $repo = printf "%s/%s" (trimSuffix "/" $.Values.global.image.registry) (trimPrefix "/" $repo) }}
+{{- end }}
+{{- $repo -}}
+{{- end -}}

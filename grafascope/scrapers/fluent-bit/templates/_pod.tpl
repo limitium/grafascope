@@ -107,7 +107,10 @@ containers:
     {{- end }}
 {{- if .Values.hotReload.enabled }}
   - name: reloader
-    image: {{ include "fluent-bit.image" .Values.hotReload.image }}
+    {{- $hotReloadImage := deepCopy .Values.hotReload.image }}
+    {{- $hotReloadRepo := include "fluent-bit.imageRepository" (dict "repository" $hotReloadImage.repository "Values" .Values) }}
+    {{- $_ := set $hotReloadImage "repository" $hotReloadRepo }}
+    image: {{ include "fluent-bit.image" $hotReloadImage }}
     args:
       - {{ printf "-webhook-url=http://localhost:%s/api/v2/reload" (toString .Values.metricsPort) }}
       - -volume-dir=/watch/config

@@ -71,6 +71,14 @@ Fluent-bit image with tag/digest
 {{- printf "%s%s%s" .repository $tag $digest -}}
 {{- end -}}
 
+{{- define "fluent-bit.imageRepository" -}}
+{{- $repo := .repository -}}
+{{- if and $.Values.global $.Values.global.image $.Values.global.image.registry }}
+{{- $repo = printf "%s/%s" (trimSuffix "/" $.Values.global.image.registry) (trimPrefix "/" $repo) }}
+{{- end }}
+{{- $repo -}}
+{{- end -}}
+
 {{/*
 Ingress ApiVersion according k8s version
 */}}

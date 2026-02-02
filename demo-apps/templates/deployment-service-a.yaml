@@ -16,17 +16,19 @@ spec:
         app.kubernetes.io/component: service-a
         {{- include "demo.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with (.Values.imagePullSecrets | default (.Values.global).imagePullSecrets) }}
       imagePullSecrets: {{ toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: service-a
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ include "demo.imageRepository" (dict "repository" .Values.image.repository "Values" .Values) }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
           {{- with .Values.serviceA.resources }}
           resources:
             {{- toYaml . | nindent 12 }}

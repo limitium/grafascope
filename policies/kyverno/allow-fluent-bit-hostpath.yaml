@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: allow-fluent-bit-hostpath
+  namespace: grafascope
+spec:
+  exceptions:
+    - policyName: restrict-hostpath-filesystem
+      ruleNames:
+        - autogen-restricted-hostpaths
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - DaemonSet
+          namespaces:
+            - grafascope
+          names:
+            - grafascope-log-tailer-fluent-bit*
+  conditions:
+    any:
+      - key: "{{ request.object.spec.volumes[].hostPath.path || '' }}"
+        operator: AnyIn
+        value:
+          - /var/log
+          - /var/lib/docker/containers

@@ -17,14 +17,19 @@ spec:
         app.kubernetes.io/component: load-generator
         {{- include "demo.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with (.Values.imagePullSecrets | default (.Values.global).imagePullSecrets) }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: load-generator
-          image: "{{ .Values.loadGenerator.image.repository }}:{{ .Values.loadGenerator.image.tag }}"
+          image: "{{ include "demo.imageRepository" (dict "repository" .Values.loadGenerator.image.repository "Values" .Values) }}:{{ .Values.loadGenerator.image.tag }}"
           imagePullPolicy: {{ .Values.loadGenerator.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
           {{- with .Values.loadGenerator.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
