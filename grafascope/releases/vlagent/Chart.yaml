@@ -1,0 +1,15 @@
+apiVersion: v2
+name: grafascope-vlagent
+description: Grafascope victoria-logs-collector chart
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: grafascope-common
+    version: 0.1.0
+    repository: "file://../../libs/grafascope-common"
+
+  - name: victoria-logs-collector
+    version: 0.2.7
+    repository: "file://../../scrapers/victoria-logs-collector"
+    condition: victoria-logs-collector.enabled

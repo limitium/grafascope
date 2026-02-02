@@ -123,15 +123,19 @@ spec:
             {{- end }}
             - name: tmp
               mountPath: /tmp
+          {{- $healthPath := "/api/health" }}
+          {{- if and .Values.server.serveFromSubPath .Values.global.paths.grafana }}
+          {{- $healthPath = printf "%s/api/health" (include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace)) }}
+          {{- end }}
           readinessProbe:
             httpGet:
-              path: /api/health
+              path: {{ $healthPath | quote }}
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /api/health
+              path: {{ $healthPath | quote }}
               port: http
             initialDelaySeconds: 30
             periodSeconds: 20

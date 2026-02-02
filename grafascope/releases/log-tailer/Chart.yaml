@@ -1,0 +1,10 @@
+apiVersion: v2
+name: grafascope-log-tailer
+description: Grafascope log tailer chart (Fluent Bit)
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: fluent-bit
+    version: 0.46.11
+    repository: "file://../../scrapers/fluent-bit"

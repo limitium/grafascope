@@ -92,10 +92,10 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Grafana up",
-      "description": "Prometheus up metric for the Grafana scrape target (1 = up).",
+      "title": "Fluent Bit up",
+      "description": "Prometheus up metric for the Fluent Bit scrape target (1 = up).",
       "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [{ "expr": "up{job=\"grafana\"}", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "up{job=\"fluent-bit\"}", "refId": "A", "instant": true }],
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center" },
       "fieldConfig": {
         "defaults": {
@@ -255,12 +255,78 @@
       "gridPos": { "x": 18, "y": 8, "w": 6, "h": 6 }
     },
     {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Fluent Bit output errors",
+      "description": "Rate of Fluent Bit output errors (failed log delivery attempts).",
+      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
+      "targets": [
+        {
+          "expr": "sum(rate(fluentbit_output_errors_total{job=\"fluent-bit\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "errors /s"
+        }
+      ],
+      "options": { "thresholdsStyle": { "mode": "area" }, "showThresholds": "on" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "max": 1,
+          "custom": { "thresholdsStyle": { "mode": "area" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "x": 0, "y": 14, "w": 6, "h": 6 }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Fluent Bit output retries failed",
+      "description": "Rate of Fluent Bit output retries that still failed (logs dropped after retry).",
+      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
+      "targets": [
+        {
+          "expr": "sum(rate(fluentbit_output_retries_failed_total{job=\"fluent-bit\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "retries failed /s"
+        }
+      ],
+      "options": { "thresholdsStyle": { "mode": "area" }, "showThresholds": "on" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "max": 1,
+          "custom": { "thresholdsStyle": { "mode": "area" } },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "x": 6, "y": 14, "w": 6, "h": 6 }
+    },
+    {
       "id": 102,
       "type": "row",
       "title": "Capacity / Concurrency",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 1 }
     },
     {
       "id": 5,
@@ -293,7 +359,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 15, "w": 6, "h": 6 }
+      "gridPos": { "x": 0, "y": 21, "w": 6, "h": 6 }
     },
     {
       "id": 6,
@@ -326,7 +392,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 6, "y": 15, "w": 6, "h": 6 }
+      "gridPos": { "x": 6, "y": 21, "w": 6, "h": 6 }
     },
     {
       "id": 8,
@@ -359,7 +425,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 15, "w": 6, "h": 6 }
+      "gridPos": { "x": 12, "y": 21, "w": 6, "h": 6 }
     },
     {
       "id": 11,
@@ -392,7 +458,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 18, "y": 15, "w": 6, "h": 6 }
+      "gridPos": { "x": 18, "y": 21, "w": 6, "h": 6 }
     },
     {
       "id": 103,
@@ -400,7 +466,7 @@
       "title": "Process Health",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 21, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 }
     },
     {
       "id": 17,
@@ -417,11 +483,11 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "decbytes"
+          "unit": "mbytes"
         },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 22, "w": 12, "h": 8 }
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 }
     },
     {
       "id": 18,
@@ -442,7 +508,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 22, "w": 12, "h": 8 }
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 }
     },
     {
       "id": 104,
@@ -450,7 +516,7 @@
       "title": "Grafana Internals",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 30, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 36, "w": 24, "h": 1 }
     },
     {
       "id": 13,
@@ -480,7 +546,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 31, "w": 8, "h": 7 }
+      "gridPos": { "x": 0, "y": 37, "w": 8, "h": 7 }
     },
     {
       "id": 14,
@@ -498,7 +564,7 @@
       "options": { "thresholdsStyle": { "mode": "area" }, "showThresholds": "on" },
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
+          "unit": "mbytes",
           "custom": { "thresholdsStyle": { "mode": "area" } },
           "thresholds": {
             "mode": "absolute",
@@ -511,7 +577,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 8, "y": 31, "w": 8, "h": 7 }
+      "gridPos": { "x": 8, "y": 37, "w": 8, "h": 7 }
     },
     {
       "id": 15,
@@ -541,7 +607,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 16, "y": 31, "w": 8, "h": 7 }
+      "gridPos": { "x": 16, "y": 37, "w": 8, "h": 7 }
     },
     {
       "id": 200,
@@ -549,7 +615,7 @@
       "title": "Storage / Disk",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 38, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 44, "w": 24, "h": 1 }
     },
     {
       "id": 201,
@@ -568,7 +634,7 @@
         "defaults": { "unit": "decbytes" },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 39, "w": 6, "h": 7 }
+      "gridPos": { "x": 0, "y": 45, "w": 6, "h": 7 }
     },
     {
       "id": 202,
@@ -587,7 +653,7 @@
         "defaults": { "unit": "decbytes" },
         "overrides": []
       },
-      "gridPos": { "x": 6, "y": 39, "w": 6, "h": 7 }
+      "gridPos": { "x": 6, "y": 45, "w": 6, "h": 7 }
     },
     {
       "id": 209,
@@ -606,7 +672,7 @@
         "defaults": { "unit": "decbytes" },
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 39, "w": 6, "h": 7 }
+      "gridPos": { "x": 12, "y": 45, "w": 6, "h": 7 }
     },
     {
       "id": 203,
@@ -652,7 +718,7 @@
           }
         ]
       },
-      "gridPos": { "x": 18, "y": 39, "w": 6, "h": 7 }
+      "gridPos": { "x": 18, "y": 45, "w": 6, "h": 7 }
     },
     {
       "id": 204,
@@ -698,7 +764,7 @@
           }
         ]
       },
-      "gridPos": { "x": 0, "y": 46, "w": 6, "h": 7 }
+      "gridPos": { "x": 0, "y": 52, "w": 6, "h": 7 }
     },
     {
       "id": 210,
@@ -744,7 +810,7 @@
           }
         ]
       },
-      "gridPos": { "x": 6, "y": 46, "w": 6, "h": 7 }
+      "gridPos": { "x": 6, "y": 52, "w": 6, "h": 7 }
     },
     {
       "id": 208,
@@ -763,15 +829,15 @@
         "defaults": {},
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 46, "w": 6, "h": 7 }
+      "gridPos": { "x": 12, "y": 52, "w": 6, "h": 7 }
     },
     {
-      "id": 210,
+      "id": 219,
       "type": "row",
       "title": "Index / Rows",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 52, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 58, "w": 24, "h": 1 }
     },
     {
       "id": 211,
@@ -790,7 +856,7 @@
         "defaults": { "unit": "Bps" },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 53, "w": 6, "h": 7 }
+      "gridPos": { "x": 0, "y": 59, "w": 6, "h": 7 }
     },
     {
       "id": 212,
@@ -806,7 +872,7 @@
         }
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "x": 6, "y": 53, "w": 6, "h": 7 }
+      "gridPos": { "x": 6, "y": 59, "w": 6, "h": 7 }
     },
     {
       "id": 213,
@@ -822,7 +888,7 @@
         }
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "x": 12, "y": 53, "w": 6, "h": 7 }
+      "gridPos": { "x": 12, "y": 59, "w": 6, "h": 7 }
     },
     {
       "id": 214,
@@ -838,7 +904,7 @@
         }
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "x": 18, "y": 53, "w": 6, "h": 7 }
+      "gridPos": { "x": 18, "y": 59, "w": 6, "h": 7 }
     },
     {
       "id": 215,
@@ -854,7 +920,7 @@
         }
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "x": 0, "y": 60, "w": 12, "h": 7 }
+      "gridPos": { "x": 0, "y": 66, "w": 12, "h": 7 }
     },
     {
       "id": 216,
@@ -870,7 +936,7 @@
         }
       ],
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "x": 12, "y": 60, "w": 12, "h": 7 }
+      "gridPos": { "x": 12, "y": 66, "w": 12, "h": 7 }
     },
     {
       "id": 220,
@@ -878,7 +944,7 @@
       "title": "Query / Insert Latency",
       "collapsed": false,
       "panels": [],
-      "gridPos": { "x": 0, "y": 67, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 73, "w": 24, "h": 1 }
     },
     {
       "id": 221,
@@ -907,7 +973,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 68, "w": 6, "h": 7 }
+      "gridPos": { "x": 0, "y": 74, "w": 6, "h": 7 }
     },
     {
       "id": 222,
@@ -936,7 +1002,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 6, "y": 68, "w": 6, "h": 7 }
+      "gridPos": { "x": 6, "y": 74, "w": 6, "h": 7 }
     },
     {
       "id": 223,
@@ -965,7 +1031,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 68, "w": 6, "h": 7 }
+      "gridPos": { "x": 12, "y": 74, "w": 6, "h": 7 }
     },
     {
       "id": 224,
@@ -994,7 +1060,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 18, "y": 68, "w": 6, "h": 7 }
+      "gridPos": { "x": 18, "y": 74, "w": 6, "h": 7 }
     },
     {
       "id": 225,
@@ -1023,7 +1089,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 0, "y": 75, "w": 12, "h": 7 }
+      "gridPos": { "x": 0, "y": 81, "w": 12, "h": 7 }
     },
     {
       "id": 226,
@@ -1052,7 +1118,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "x": 12, "y": 75, "w": 12, "h": 7 }
+      "gridPos": { "x": 12, "y": 81, "w": 12, "h": 7 }
     }
   ]
 }

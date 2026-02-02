@@ -1,8 +1,0 @@
-vmagent:
-  enabled: true # toggle vmagent for this release
-
-victoria-logs-collector:
-  enabled: true # toggle logs collector for this release
-  serviceAccount:
-    create: false # use gfs-user release ServiceAccount
-    name: gfs-user

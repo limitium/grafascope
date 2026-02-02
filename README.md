@@ -18,19 +18,27 @@ helm upgrade --install gfs-user ./grafascope/releases/gfs-user -n grafascope --c
 helm dependency update ./grafascope/releases/core
 helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope -f grafascope/values.yaml
 
-helm dependency update ./grafascope/releases/scrapers
-helm upgrade --install grafascope-scrapers ./grafascope/releases/scrapers -n grafascope -f grafascope/values.yaml
+# Scrapers (separate releases)
+helm dependency update ./grafascope/releases/vmagent
+helm upgrade --install grafascope-vmagent ./grafascope/releases/vmagent -n grafascope -f grafascope/values.yaml
+
+helm dependency update ./grafascope/releases/vlagent
+helm upgrade --install grafascope-vlagent ./grafascope/releases/vlagent -n grafascope -f grafascope/values.yaml
 
 # Optional demo apps (metrics/logs/traces generator)
 helm dependency update ./demo-apps
 helm upgrade --install demo-apps ./demo-apps -n grafascope -f grafascope/values.yaml
+
+# Optional log tailer (Fluent Bit)
+helm dependency update ./grafascope/releases/log-tailer
+helm upgrade --install grafascope-log-tailer ./grafascope/releases/log-tailer -n grafascope -f grafascope/values.yaml
 ```
 
 If you install a service or scraper chart directly, run `helm dependency update` in that
 chart directory first. Some charts depend on shared templates in
 `grafascope/libs/grafascope-common`.
 
-`grafascope/values.yaml` is the shared values file for the core and scrapers
+`grafascope/values.yaml` is the shared values file for the core and scraper
 releases. It contains the global ingress paths/ports and service/scraper overrides.
 Installable charts live under `grafascope/releases/*`, while deployable charts
 live under `grafascope/services` and `grafascope/scrapers`. Shared library
@@ -42,6 +50,14 @@ log collector ServiceAccount name is sourced from the same global value.
 Default ingress is configured for a single domain (`localhost`) with subpaths.
 Use the `global.*` block in `grafascope/values.yaml` to set hosts, protocol,
 paths, and ports in one place. Service charts assume global values.
+
+The install script installs **ingress-nginx** (Ingress class `nginx`) so Ingress
+resources are served. For **k3d**: create the cluster with port 80 mapped so
+`http://localhost/<namespace>/grafana` works:
+`k3d cluster create <name> -p 80:80@server:0 -p 443:443@server:0`. If the cluster
+was created without that, run
+`kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8080:80`
+and open `http://localhost:8080/<namespace>/grafana`.
 
 ## gfs-user RBAC (copy/paste)
 
@@ -137,7 +153,9 @@ grafascope/
   releases/
     gfs-user/
     core/
-    scrapers/
+    vmagent/
+    vlagent/
+    log-tailer/
   services/
     grafana/
     victoria-metrics/
@@ -146,6 +164,7 @@ grafascope/
   scrapers/
     vmagent/
     victoria-logs-collector/
+    fluent-bit/
   libs/
     grafascope-common/
     victoria-common/
@@ -177,7 +196,7 @@ helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope 
 - VictoriaMetrics: 8428
 - VictoriaLogs: 9428
 - VictoriaTraces: 9410
-- Scrapers: vmagent (metrics), victoria-logs-collector (logs, DaemonSet)
+- Dedicated releases: vmagent (metrics), vlagent (VictoriaLogs collector, DaemonSet), log-tailer (Fluent Bit)
 
 ## Useful commands
 
@@ -192,10 +211,12 @@ kubectl rollout status deployment/vmagent -n grafascope
 kubectl rollout status statefulset/victoria-metrics -n grafascope
 kubectl rollout status statefulset/victoria-logs -n grafascope
 kubectl rollout status statefulset/victoria-traces -n grafascope
-kubectl rollout status daemonset/grafascope-scrapers-victoria-logs-collector -n grafascope
+kubectl rollout status daemonset/grafascope-vlagent-victoria-logs-collector -n grafascope
 
 # Uninstall
-helm uninstall grafascope-scrapers -n grafascope
+helm uninstall grafascope-log-tailer -n grafascope
+helm uninstall grafascope-vlagent -n grafascope
+helm uninstall grafascope-vmagent -n grafascope
 helm uninstall grafascope-core -n grafascope
 helm uninstall gfs-user -n grafascope
 ```

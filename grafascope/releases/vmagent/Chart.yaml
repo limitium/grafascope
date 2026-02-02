@@ -1,6 +1,6 @@
 apiVersion: v2
-name: grafascope-scrapers
-description: Grafascope scrapers chart (vmagent + victoria-logs-collector)
+name: grafascope-vmagent
+description: Grafascope vmagent chart
 type: application
 version: 0.1.0
 
@@ -13,8 +13,3 @@ dependencies:
     version: 0.1.0
     repository: "file://../../scrapers/vmagent"
     condition: vmagent.enabled
-
-  - name: victoria-logs-collector
-    version: 0.2.7
-    repository: "file://../../scrapers/victoria-logs-collector"
-    condition: victoria-logs-collector.enabled

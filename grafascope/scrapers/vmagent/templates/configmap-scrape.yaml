@@ -26,6 +26,10 @@ data:
         metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace)) | quote }}
         static_configs:
           - targets: ["grafana:{{ .Values.global.ports.grafana }}"]
+      - job_name: fluent-bit
+        metrics_path: /api/v2/metrics/prometheus
+        static_configs:
+          - targets: ["grafascope-log-tailer-fluent-bit:2020"]
       {{- $targets := .Values.scrapeTargets }}
       {{- if not $targets }}
       {{- $targets = .Values.global.scrapers.metricsTargets }}
