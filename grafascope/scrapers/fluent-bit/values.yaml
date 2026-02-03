@@ -58,7 +58,10 @@ openShift:
     # Use existing SCC in cluster, rather then create new one
     existingName: ""
 
-podSecurityContext: {}
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
 #   fsGroup: 2000
 
 hostNetwork: false
@@ -81,12 +84,13 @@ hostAliases: []
 #     - "foo.local"
 #     - "bar.local"
 
-securityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
 #   capabilities:
 #     drop:
 #     - ALL
-#   readOnlyRootFilesystem: true
-#   runAsNonRoot: true
 #   runAsUser: 1000
 
 service:
@@ -459,23 +463,22 @@ volumeMounts:
 daemonSetVolumes:
   - name: varlog
     hostPath:
-      path: /var/log
+      path: /var/log/pods
+      type: Directory
   - name: varlibdockercontainers
     hostPath:
-      path: /var/lib/docker/containers
+      path: /var/log/containers
   - name: etcmachineid
-    hostPath:
-      path: /etc/machine-id
-      type: File
+    emptyDir: {}
 
 daemonSetVolumeMounts:
   - name: varlog
-    mountPath: /var/log
+    mountPath: /var/log/pods
   - name: varlibdockercontainers
-    mountPath: /var/lib/docker/containers
+    mountPath: /var/log/containers
     readOnly: true
   - name: etcmachineid
-    mountPath: /etc/machine-id
+    mountPath: /tmp/etc/machine-id
     readOnly: true
 
 command:
