@@ -23,8 +23,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "demo.imageRepository" -}}
-{{- $repo := .repository -}}
+{{- $repo := trimPrefix "/" .repository -}}
 {{- if and $.Values.global $.Values.global.image $.Values.global.image.registry }}
+{{- $parts := splitList "/" $repo }}
+{{- if gt (len $parts) 1 }}
+{{- $first := index $parts 0 }}
+{{- if or (contains "." $first) (contains ":" $first) (eq $first "localhost") }}
+{{- $repo = join "/" (slice $parts 1) }}
+{{- end }}
+{{- end }}
 {{- $repo = printf "%s/%s" (trimSuffix "/" $.Values.global.image.registry) (trimPrefix "/" $repo) }}
 {{- end }}
 {{- $repo -}}

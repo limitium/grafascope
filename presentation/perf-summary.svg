@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#f8f9fb"/>
+  <text x="600" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#2a2a2a">Single-node results highlight</text>
+
+  <rect x="110" y="120" width="300" height="280" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="260" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Logs</text>
+  <text x="260" y="220" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">-78% storage</text>
+  <text x="260" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">157 vs 706 bytes/line</text>
+  <text x="260" y="285" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">-83% memory</text>
+  <text x="260" y="315" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">320 vs 1,850 MB</text>
+
+  <rect x="450" y="120" width="300" height="280" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="600" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Traces</text>
+  <text x="600" y="220" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">-62% storage</text>
+  <text x="600" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">312 vs 818 bytes/span</text>
+  <text x="600" y="285" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">-34% memory</text>
+  <text x="600" y="315" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">955 vs 1,450 MB</text>
+
+  <rect x="790" y="120" width="300" height="280" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="940" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Metrics</text>
+  <text x="940" y="220" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">-55% storage</text>
+  <text x="940" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">7.0 vs 15.4 bytes/sample</text>
+  <text x="940" y="285" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#2a2a2a">+20% faster P50</text>
+  <text x="940" y="315" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">rate queries (VM)</text>
+</svg>

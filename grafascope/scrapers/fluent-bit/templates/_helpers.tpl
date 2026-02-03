@@ -55,10 +55,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "fluent-bit.serviceAccountName" -}}
+{{- $saName := .Values.serviceAccount.name }}
+{{- if and .Values.global .Values.global.gfsUser .Values.global.gfsUser.username }}
+{{- $saName = .Values.global.gfsUser.username }}
+{{- end }}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "fluent-bit.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "fluent-bit.fullname" .) $saName }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" $saName }}
 {{- end -}}
 {{- end -}}
 
@@ -72,8 +76,15 @@ Fluent-bit image with tag/digest
 {{- end -}}
 
 {{- define "fluent-bit.imageRepository" -}}
-{{- $repo := .repository -}}
+{{- $repo := trimPrefix "/" .repository -}}
 {{- if and $.Values.global $.Values.global.image $.Values.global.image.registry }}
+{{- $parts := splitList "/" $repo }}
+{{- if gt (len $parts) 1 }}
+{{- $first := index $parts 0 }}
+{{- if or (contains "." $first) (contains ":" $first) (eq $first "localhost") }}
+{{- $repo = join "/" (slice $parts 1) }}
+{{- end }}
+{{- end }}
 {{- $repo = printf "%s/%s" (trimSuffix "/" $.Values.global.image.registry) (trimPrefix "/" $repo) }}
 {{- end }}
 {{- $repo -}}

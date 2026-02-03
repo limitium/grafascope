@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#f8f9fb"/>
+  <text x="600" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#2a2a2a">Average memory (MB, lower is better)</text>
+
+  <text x="160" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#2a2a2a">Metrics</text>
+  <text x="600" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#2a2a2a">Logs</text>
+  <text x="1040" y="100" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#2a2a2a">Traces</text>
+
+  <!-- Metrics bars (scale: max 1850) -->
+  <rect x="110" y="275" width="70" height="85" fill="#8899aa"/>
+  <rect x="200" y="263" width="70" height="97" fill="#4d79c7"/>
+  <text x="145" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Prom 185</text>
+  <text x="235" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">VM 245</text>
+
+  <!-- Logs bars -->
+  <rect x="550" y="120" width="70" height="240" fill="#8899aa"/>
+  <rect x="640" y="313" width="70" height="47" fill="#4e9c67"/>
+  <text x="585" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Loki 1850</text>
+  <text x="675" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">VLogs 320</text>
+
+  <!-- Traces bars -->
+  <rect x="990" y="170" width="70" height="190" fill="#8899aa"/>
+  <rect x="1080" y="215" width="70" height="145" fill="#e6862f"/>
+  <text x="1025" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Tempo 1450</text>
+  <text x="1115" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">VTraces 955</text>
+
+  <text x="120" y="440" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Classic</text>
+  <rect x="175" y="430" width="16" height="16" fill="#8899aa"/>
+  <text x="240" y="440" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Victoria</text>
+  <rect x="305" y="430" width="16" height="16" fill="#4d79c7"/>
+  <rect x="327" y="430" width="16" height="16" fill="#4e9c67"/>
+  <rect x="349" y="430" width="16" height="16" fill="#e6862f"/>
+</svg>

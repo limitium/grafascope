@@ -225,6 +225,7 @@ fluent-bit:
     runAsGroup: 0
   serviceAccount:
     create: false
+    name: gfs-user
   rbac:
     create: false
     nodeAccess: false

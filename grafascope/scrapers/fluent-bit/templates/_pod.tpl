@@ -38,11 +38,26 @@ containers:
     securityContext:
       {{- toYaml . | nindent 6 }}
   {{- end }}
-    {{- $imageRepo := .Values.image.repository }}
+    {{- $registry := "" }}
     {{- if and .Values.global .Values.global.image .Values.global.image.registry }}
-    {{- $imageRepo = printf "%s/%s" (trimSuffix "/" .Values.global.image.registry) (trimPrefix "/" $imageRepo) }}
+    {{- $registry = trimSuffix "/" .Values.global.image.registry }}
     {{- end }}
-    image: {{ include "fluent-bit.image" (merge .Values.image (dict "tag" (default .Chart.AppVersion .Values.image.tag)) (dict "repository" $imageRepo)) | quote }}
+    {{- $repo := trimPrefix "/" .Values.image.repository }}
+    {{- $tagValue := .Values.image.tag }}
+    {{- $tag := "" }}
+    {{- if eq "-" (toString $tagValue) }}
+    {{- $tag = "" }}
+    {{- else if empty $tagValue }}
+    {{- $tag = printf ":%s" .Chart.AppVersion }}
+    {{- else }}
+    {{- $tag = printf ":%s" (toString $tagValue) }}
+    {{- end }}
+    {{- $digest := ternary "" (printf "@%s" .Values.image.digest) (empty .Values.image.digest) }}
+    {{- if $registry }}
+    image: {{ printf "%s/%s%s%s" $registry $repo $tag $digest | quote }}
+    {{- else }}
+    image: {{ printf "%s%s%s" $repo $tag $digest | quote }}
+    {{- end }}
     imagePullPolicy: {{ .Values.image.pullPolicy }}
   {{- if or .Values.env .Values.envWithTpl }}
     env:

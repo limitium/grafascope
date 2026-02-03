@@ -34,7 +34,7 @@ serviceAccount:
   name:
 
 rbac:
-  create: true
+  create: false
   nodeAccess: false
   eventsAccess: false
 

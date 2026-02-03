@@ -40,7 +40,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "victoria-metrics.globalPath" -}}
-{{- default "" (index .Values.global.paths "victoriaMetrics") -}}
+{{- $path := (index .Values.global.paths "victoriaMetrics") -}}
+{{- if not $path -}}
+{{- $path = (index .Values.global.paths "victoria-metrics") -}}
+{{- end -}}
+{{- default "" $path -}}
 {{- end -}}
 
 {{- define "victoria-metrics.globalPort" -}}

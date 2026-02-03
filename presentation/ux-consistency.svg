@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#f8f9fb"/>
+  <text x="600" y="48" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#2a2a2a">Unified UX across metrics, logs, and traces</text>
+
+  <rect x="90" y="140" width="300" height="240" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="240" y="200" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Metrics</text>
+  <text x="240" y="235" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">PromQL</text>
+  <text x="240" y="265" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Dashboards</text>
+  <text x="240" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Alerts</text>
+
+  <rect x="450" y="140" width="300" height="240" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="600" y="200" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Logs</text>
+  <text x="600" y="235" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">LogQL / LogSQL</text>
+  <text x="600" y="265" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Same labels</text>
+  <text x="600" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Same dashboards</text>
+
+  <rect x="810" y="140" width="300" height="240" rx="14" fill="#ffffff" stroke="#7d8ea3" stroke-width="3"/>
+  <text x="960" y="200" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#2a2a2a">Traces</text>
+  <text x="960" y="235" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Jaeger API</text>
+  <text x="960" y="265" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Same tags</text>
+  <text x="960" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#2a2a2a">Same links</text>
+
+  <text x="600" y="445" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#2a2a2a">Fewer context switches, faster incident triage</text>
+</svg>
