@@ -13,13 +13,13 @@
 #   DRY_RUN=1 (print commands without executing)
 #
 # Usage:
-#   scripts/update-and-upgrade.sh all
-#   scripts/update-and-upgrade.sh core
-#   scripts/update-and-upgrade.sh vmagent
-#   scripts/update-and-upgrade.sh fluent-bit
-#   scripts/update-and-upgrade.sh demo-apps
-#   scripts/update-and-upgrade.sh policy
-#   scripts/update-and-upgrade.sh delete-all
+#   scripts/update-and-upgrade.sh all [--dry-run]
+#   scripts/update-and-upgrade.sh core [--dry-run]
+#   scripts/update-and-upgrade.sh vmagent [--dry-run]
+#   scripts/update-and-upgrade.sh fluent-bit [--dry-run]
+#   scripts/update-and-upgrade.sh demo-apps [--dry-run]
+#   scripts/update-and-upgrade.sh policy [--dry-run]
+#   scripts/update-and-upgrade.sh delete-all [--dry-run]
 
 set -euo pipefail
 
@@ -30,10 +30,21 @@ NAMESPACE="${NAMESPACE:-grafascope}"
 VALUES="${VALUES:-grafascope/values.yaml}"
 POLICY="${POLICY:-policies/kyverno/allow-fluent-bit-hostpath.yaml}"
 DRY_RUN="${DRY_RUN:-0}"
+
+if [[ $# -gt 0 && "${@: -1}" == "--dry-run" ]]; then
+  DRY_RUN=1
+  set -- "${@:1:$#-1}"
+fi
+
 ACTION="${1:-all}"
 
 run() {
   if [[ "$DRY_RUN" == "1" || "$DRY_RUN" == "true" || "$DRY_RUN" == "yes" ]]; then
+    if [[ "$1" == "helm" && "$2" == "upgrade" ]]; then
+      shift
+      helm "$@" --dry-run --debug
+      return 0
+    fi
     echo "[dry-run] $*"
     return 0
   fi
