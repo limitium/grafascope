@@ -4,8 +4,7 @@
 # 2) vmagent
 # 3) fluent-bit (log-tailer)
 # 4) demo-apps
-# 5) policy (apply hostPath policy exception)
-# 6) delete-all (uninstall the four above)
+# 5) delete-all (uninstall the four above)
 #
 # Defaults:
 #   NAMESPACE=grafascope
@@ -18,7 +17,6 @@
 #   scripts/update-and-upgrade.sh vmagent [--dry-run]
 #   scripts/update-and-upgrade.sh fluent-bit [--dry-run]
 #   scripts/update-and-upgrade.sh demo-apps [--dry-run]
-#   scripts/update-and-upgrade.sh policy [--dry-run]
 #   scripts/update-and-upgrade.sh delete-all [--dry-run]
 
 set -euo pipefail
@@ -28,7 +26,6 @@ cd "$REPO_ROOT"
 
 NAMESPACE="${NAMESPACE:-grafascope}"
 VALUES="${VALUES:-grafascope/values.yaml}"
-POLICY="${POLICY:-policies/kyverno/allow-fluent-bit-hostpath.yaml}"
 DRY_RUN="${DRY_RUN:-0}"
 
 if [[ $# -gt 0 && "${@: -1}" == "--dry-run" ]]; then
@@ -71,20 +68,6 @@ update_demo_apps() {
   run helm upgrade --install demo-apps ./demo-apps -n "$NAMESPACE" -f "$VALUES"
 }
 
-apply_policy() {
-  if [[ "$DRY_RUN" == "1" || "$DRY_RUN" == "true" || "$DRY_RUN" == "yes" ]]; then
-    run kubectl apply -f "$POLICY"
-    return 0
-  fi
-  if ! kubectl get crd policyexceptions.kyverno.io >/dev/null 2>&1; then
-    echo "Kyverno PolicyException CRD not found." >&2
-    echo "Install Kyverno CRDs first, then re-run:" >&2
-    echo "  kubectl get crd policyexceptions.kyverno.io" >&2
-    exit 1
-  fi
-  run kubectl apply -f "$POLICY"
-}
-
 delete_all() {
   run helm uninstall demo-apps -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall grafascope-log-tailer -n "$NAMESPACE" 2>/dev/null || true
@@ -94,14 +77,10 @@ delete_all() {
 
 case "$ACTION" in
   all)
-    apply_policy
     update_core
     update_vmagent
     update_fluent_bit
     update_demo_apps
-    ;;
-  policy)
-    apply_policy
     ;;
   core)
     update_core
@@ -120,7 +99,7 @@ case "$ACTION" in
     ;;
   *)
     echo "Unknown action: $ACTION" >&2
-    echo "Use: all | core | vmagent | fluent-bit | demo-apps | policy | delete-all" >&2
+    echo "Use: all | core | vmagent | fluent-bit | demo-apps | delete-all" >&2
     exit 1
     ;;
 esac

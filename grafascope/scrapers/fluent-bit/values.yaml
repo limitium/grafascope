@@ -59,9 +59,9 @@ openShift:
     existingName: ""
 
 podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  runAsNonRoot: true
+  # runAsUser: 1000
+  # runAsGroup: 1000
+  # runAsNonRoot: true
 #   fsGroup: 2000
 
 hostNetwork: false
@@ -87,7 +87,7 @@ hostAliases: []
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
-  runAsNonRoot: true
+  # runAsNonRoot: true
 #   capabilities:
 #     drop:
 #     - ALL

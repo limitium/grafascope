@@ -38,6 +38,8 @@ global:
     # Optional global scrape targets for vmagent.
     # Leave empty when using per-release vmagent.scrapeTargets.
     metricsTargets: []
+  # Cluster name added as log attribute for multi-cluster filtering (e.g. clusterName:prod).
+  clusterName: ""
 
 # Service and scraper overrides are centralized here.
 grafana:
@@ -210,6 +212,40 @@ victoria-logs-collector:
 
 fluent-bit:
   # Optional log tailer that does not use Kubernetes API.
+  luaScripts:
+    parse_container_path.lua: |
+      function parse_container_path(tag, timestamp, record)
+        local path = record["_path"]
+        if not path then return 1, timestamp, record end
+        local filename = path:match("([^/]+)$") or ""
+        filename = filename:gsub("%.log$", "")
+        filename = filename:gsub("%-[0-9a-fA-F]{64}$", "")
+        local parts = {}
+        for part in (filename .. "_"):gmatch("(.-)_") do
+          table.insert(parts, part)
+        end
+        if #parts >= 3 then
+          record["kubernetes_pod_name"] = table.concat(parts, "_", 1, #parts - 2)
+          record["kubernetes_namespace"] = parts[#parts - 1]
+          record["kubernetes_container_name"] = parts[#parts]
+        end
+        local pod_name = record["kubernetes_pod_name"]
+        if pod_name then
+          local segs = {}
+          for s in (pod_name .. "-"):gmatch("(.-)-") do
+            table.insert(segs, s)
+          end
+          if #segs >= 3 then
+            record["service"] = table.concat(segs, "-", 1, #segs - 2)
+          elseif #segs == 2 then
+            record["service"] = segs[1]
+          elseif #segs == 1 then
+            record["service"] = segs[1]
+          end
+        end
+        record["_path"] = nil
+        return 2, timestamp, record
+      end
   kind: DaemonSet
   resources:
     requests:
@@ -220,7 +256,7 @@ fluent-bit:
   securityContext:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
-    runAsNonRoot: true
+    # runAsNonRoot: true
   serviceAccount:
     create: false
     name: "" # defaults to global.gfsUser.username when set
@@ -244,11 +280,18 @@ fluent-bit:
       [INPUT]
           Name tail
           Path /var/log/containers/*.log
+          Path_Key _path
           multiline.parser docker, cri
           Tag kube.*
           Mem_Buf_Limit 5MB
           Skip_Long_Lines On
     filters: |
+      # Extract pod, namespace, container from /var/log/containers filename (pod_namespace_container-id.log).
+      [FILTER]
+          Name lua
+          Match kube.*
+          script /fluent-bit/scripts/parse_container_path.lua
+          call parse_container_path
       # Parse log field as JSON so _msg, service, trace_id etc. are queryable in VictoriaLogs.
       [FILTER]
           Name parser
@@ -261,6 +304,13 @@ fluent-bit:
           Match kube.*
           Condition Key_does_not_exist _msg
           Copy log _msg
+      {{- if and .Values.global .Values.global.clusterName }}
+      # Add cluster label for multi-cluster querying.
+      [FILTER]
+          Name modify
+          Match kube.*
+          Add cluster {{ .Values.global.clusterName | quote }}
+      {{- end }}
       # No Kubernetes filter (avoids API calls).
     outputs: |
       [OUTPUT]
@@ -270,7 +320,7 @@ fluent-bit:
           Port 9428
           # Include the namespace prefix when http.pathPrefix is enabled:
           # /<namespace>/victoria-logs/insert/jsonline
-          URI /grafascope/victoria-logs/insert/jsonline?_stream_fields=stream&_msg_field=_msg,log&_time_field=date
+          URI /grafascope/victoria-logs/insert/jsonline?_stream_fields=stream,kubernetes_pod_name,kubernetes_namespace,kubernetes_container_name,service{{- if and .Values.global .Values.global.clusterName }},cluster{{- end }}&_msg_field=_msg,log&_time_field=date
           Format json_lines
           Header Content-Type application/json
           Json_date_format iso8601

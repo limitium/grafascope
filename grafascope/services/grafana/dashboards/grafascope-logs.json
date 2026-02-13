@@ -4,15 +4,22 @@
   "schemaVersion": 42,
   "version": 1,
   "refresh": "30s",
-  "time": { "from": "now-30m", "to": "now" },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "templating": {
     "list": [
       {
-        "name": "namespace",
-        "label": "Namespace",
+        "name": "cluster",
+        "label": "Cluster",
         "type": "textbox",
         "query": "",
-        "current": { "text": ".*", "value": ".*", "selected": true },
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
         "options": [],
         "hide": 0,
         "skipUrlSync": false
@@ -22,7 +29,25 @@
         "label": "Service",
         "type": "textbox",
         "query": "",
-        "current": { "text": ".*", "value": ".*", "selected": true },
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
+        "options": [],
+        "hide": 0,
+        "skipUrlSync": false
+      },
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "textbox",
+        "query": "",
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
         "options": [],
         "hide": 0,
         "skipUrlSync": false
@@ -32,7 +57,11 @@
         "label": "Pod",
         "type": "textbox",
         "query": "",
-        "current": { "text": ".*", "value": ".*", "selected": true },
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
         "options": [],
         "hide": 0,
         "skipUrlSync": false
@@ -42,7 +71,11 @@
         "label": "Container",
         "type": "textbox",
         "query": "",
-        "current": { "text": ".*", "value": ".*", "selected": true },
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
         "options": [],
         "hide": 0,
         "skipUrlSync": false
@@ -52,7 +85,11 @@
         "label": "Log Search",
         "type": "textbox",
         "query": "",
-        "current": { "text": ".*", "value": ".*", "selected": true },
+        "current": {
+          "text": ".*",
+          "value": ".*",
+          "selected": true
+        },
         "options": [],
         "hide": 0,
         "skipUrlSync": false
@@ -64,12 +101,18 @@
       "id": 1,
       "type": "logs",
       "title": "Kubernetes Logs",
-      "datasource": { "type": "victoriametrics-logs-datasource", "uid": "VictoriaLogs" },
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaLogs"
+      },
       "targets": [
         {
-          "datasource": { "type": "victoriametrics-logs-datasource", "uid": "VictoriaLogs" },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaLogs"
+          },
           "editorMode": "code",
-          "expr": "kubernetes.pod_namespace:re(\"${namespace:raw}\") AND service:re(\"${service:raw}\") AND kubernetes.pod_name:re(\"${pod:raw}\") AND kubernetes.container_name:re(\"${container:raw}\") AND _msg:re(\"${log_search:raw}\")",
+          "expr": "service:re(\"${service:raw}\") AND kubernetes_namespace:re(\"${namespace:raw}\") AND kubernetes_pod_name:re(\"${pod:raw}\") AND kubernetes_container_name:re(\"${container:raw}\") AND _msg:re(\"${log_search:raw}\")",
           "queryType": "instant",
           "refId": "A"
         }
@@ -86,7 +129,12 @@
         "sortOrder": "Descending",
         "wrapLogMessage": true
       },
-      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 14 }
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 14
+      }
     }
   ]
 }
