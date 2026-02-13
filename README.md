@@ -83,7 +83,6 @@ rules:
       - autoscaling
       - batch
       - extensions
-      - policy
       - rbac.authorization.k8s.io
     resources:
       - pods
