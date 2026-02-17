@@ -17,6 +17,7 @@ replicaCount: 1 # vmagent replicas
 remoteWriteUrl: "" # when empty, built from global protocol/ports/paths
 
 scrapeInterval: 30s # global scrape interval
+includeDefaultScrapeJobs: false # when true, include victoria-metrics, victoria-logs, victoria-traces, grafana, fluent-bit
 scrapeTargets: [] # optional override; when empty, use global defaults
 podAnnotations: {}
 nodeSelector: {}

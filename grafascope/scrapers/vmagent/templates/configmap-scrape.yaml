@@ -10,6 +10,7 @@ data:
     global:
       scrape_interval: {{ .Values.scrapeInterval | quote }}
     scrape_configs:
+      {{- if .Values.includeDefaultScrapeJobs }}
       - job_name: victoria-metrics
         metrics_path: {{ printf "%s/metrics" (include "grafascope.pathWithNamespace" (dict "path" (index .Values.global.paths "victoriaMetrics") "namespace" .Release.Namespace)) | quote }}
         static_configs:
@@ -30,6 +31,7 @@ data:
         metrics_path: /api/v2/metrics/prometheus
         static_configs:
           - targets: ["grafascope-log-tailer-fluent-bit:2020"]
+      {{- end }}
       {{- $targets := .Values.scrapeTargets }}
       {{- if not $targets }}
       {{- $targets = .Values.global.scrapers.metricsTargets }}

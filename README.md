@@ -2,10 +2,33 @@
 # Grafascope
 
 Minimal Helm charts for a complete observability stack built on Grafana and
-VictoriaMetrics/Logs/Traces, plus scrapers. The stack is split into three
+VictoriaMetrics/Logs/Traces, plus scrapers. The stack is split into multiple
 releases for isolated upgrades and clean defaults.
 
-## Install (three releases)
+## Install
+
+### Quick install (script)
+
+From a **consumer repo** (with grafascope as submodule and `values/<env>.yaml`):
+
+```bash
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev all
+```
+
+This installs: core (Grafana + VictoriaMetrics/Logs/Traces), vmagent, log-tailer
+(Fluent Bit), and demo-apps. It does not install gfs-user or vlagent—use manual
+commands below if needed.
+
+```bash
+# Other actions
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev core
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev vmagent
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev fluent-bit
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev demo-apps
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev delete-all
+```
+
+### Manual install (all releases)
 
 ```bash
 # From repo root
@@ -18,20 +41,21 @@ helm upgrade --install gfs-user ./grafascope/releases/gfs-user -n grafascope --c
 helm dependency update ./grafascope/releases/core
 helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope -f grafascope/values.yaml
 
-# Scrapers (separate releases)
+# Scrapers
 helm dependency update ./grafascope/releases/vmagent
 helm upgrade --install grafascope-vmagent ./grafascope/releases/vmagent -n grafascope -f grafascope/values.yaml
 
+# Log collectors (use one or the other)
+# vlagent: VictoriaLogs collector (K8s API)
 helm dependency update ./grafascope/releases/vlagent
 helm upgrade --install grafascope-vlagent ./grafascope/releases/vlagent -n grafascope -f grafascope/values.yaml
-
-# Optional demo apps (metrics/logs/traces generator)
-helm dependency update ./demo-apps
-helm upgrade --install demo-apps ./demo-apps -n grafascope -f grafascope/values.yaml
-
-# Optional log tailer (Fluent Bit)
+# log-tailer: Fluent Bit (no K8s API, path-based extraction)
 helm dependency update ./grafascope/releases/log-tailer
 helm upgrade --install grafascope-log-tailer ./grafascope/releases/log-tailer -n grafascope -f grafascope/values.yaml
+
+# Optional demo apps
+helm dependency update ./demo-apps
+helm upgrade --install demo-apps ./demo-apps -n grafascope -f grafascope/values.yaml
 ```
 
 If you install a service or scraper chart directly, run `helm dependency update` in that
@@ -51,8 +75,92 @@ Default ingress is configured for a single domain (`localhost`) with subpaths.
 Use the `global.*` block in `grafascope/values.yaml` to set hosts, protocol,
 paths, and ports in one place. Service charts assume global values.
 
-The install script installs **ingress-nginx** (Ingress class `nginx`) so Ingress
-resources are served. For **k3d**: create the cluster with port 80 mapped so
+## Using as a Git submodule
+
+Use this repo as a template by adding it as a submodule in a consumer repo.
+Override resources, storage, logs ingest URL, and other env-specific settings
+without forking.
+
+### 1. Add the submodule
+
+From your consumer repo root:
+
+```bash
+git submodule add https://github.com/your-org/grafascope.git grafascope
+git submodule update --init --recursive
+```
+
+### 2. Consumer repo structure
+
+```
+your-deployments/
+├── grafascope/              # submodule
+├── values/
+│   └── grafascope-dev.yaml  # env-specific overrides
+└── .gitmodules
+```
+
+### 3. Environment-specific values
+
+Create `values/${ENV}.yaml` with overrides. These are merged over the base
+`grafascope/values.yaml`. Typical overrides:
+
+```yaml
+# values/prod.yaml
+global:
+  clusterName: prod
+  domain: obs.example.com
+
+fluent-bit:
+  config:
+    outputs: |
+      [OUTPUT]
+          Name http
+          Host victoria-logs
+          URI /prod/victoria-logs/insert/jsonline...
+  resources:
+    limits:
+      memory: 2G
+
+victoria-logs:
+  persistence:
+    size: 50Gi
+
+victoria-metrics:
+  persistence:
+    size: 100Gi
+
+vmagent:
+  scrapeTargets: [...]
+```
+
+### 4. Deploy
+
+From the **consumer repo root**:
+
+```bash
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev all
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev core --dry-run
+```
+
+To use explicit values files instead of env:
+
+```bash
+VALUES="grafascope/values.yaml ../values/grafascope-dev.yaml" ./grafascope/scripts/update-and-upgrade.sh grafascope-dev all
+```
+
+### 5. Updating the submodule
+
+```bash
+cd grafascope && git pull origin main && cd ..
+git add grafascope
+git commit -m "Update grafascope submodule"
+```
+
+---
+
+Ingress requires **ingress-nginx** (Ingress class `nginx`). Install it separately
+if needed. For **k3d**: create the cluster with port 80 mapped so
 `http://localhost/<namespace>/grafana` works:
 `k3d cluster create <name> -p 80:80@server:0 -p 443:443@server:0`. If the cluster
 was created without that, run
@@ -83,6 +191,7 @@ rules:
       - autoscaling
       - batch
       - extensions
+      - policy
       - rbac.authorization.k8s.io
     resources:
       - pods
@@ -210,14 +319,18 @@ kubectl rollout status deployment/vmagent -n grafascope
 kubectl rollout status statefulset/victoria-metrics -n grafascope
 kubectl rollout status statefulset/victoria-logs -n grafascope
 kubectl rollout status statefulset/victoria-traces -n grafascope
+# Log collector (Fluent Bit; if using log-tailer)
+kubectl rollout status daemonset/grafascope-log-tailer-fluent-bit -n grafascope
+# Log collector (vlagent; if using grafascope-vlagent)
 kubectl rollout status daemonset/grafascope-vlagent-victoria-logs-collector -n grafascope
 
-# Uninstall
+# Uninstall (matches scripts/update-and-upgrade.sh delete-all, plus gfs-user/vlagent)
+helm uninstall demo-apps -n grafascope
 helm uninstall grafascope-log-tailer -n grafascope
-helm uninstall grafascope-vlagent -n grafascope
 helm uninstall grafascope-vmagent -n grafascope
 helm uninstall grafascope-core -n grafascope
-helm uninstall gfs-user -n grafascope
+helm uninstall grafascope-vlagent -n grafascope  # if installed
+helm uninstall gfs-user -n grafascope            # if installed
 ```
 
 ## Ingest data (via Ingress)
@@ -241,8 +354,11 @@ VictoriaLogs accepts log insert requests under `/insert/*`. For example:
 http://localhost/<namespace>/victoria-logs/insert/jsonline
 ```
 
-The collector remote write must target `/insert/native` and include the namespace
-prefix when using `http.pathPrefix`.
+The Fluent Bit log-tailer sends to
+`/<namespace>/victoria-logs/insert/jsonline` (path configured via
+`fluent-bit.config.outputs` and `global.paths`). The vlagent collector remote
+write targets `/insert/native` and must include the namespace path prefix when
+`http.pathPrefix` is enabled.
 
 ### Traces (VictoriaTraces, OTLP HTTP)
 
@@ -258,6 +374,7 @@ http://localhost/<namespace>/victoria-traces/insert/opentelemetry/v1/traces
 - `global.domain`/`global.hosts`: shared ingress host(s) for all services.
 - `global.protocol`: protocol for building URLs for Grafana and datasources.
 - `global.paths.*`: shared subpaths for ingress routing and app prefixes (camelCase keys like `victoriaMetrics`).
+- `global.clusterName`: cluster label added to logs for multi-cluster filtering.
 - `global.gfsUser.username`: shared ServiceAccount name for gfs-user and logs collector.
 - `gfs-user.rbac.clusterWide`: must be `true` if the collector uses node metadata (required to start).
 - `global.scrapers.metricsTargets`: optional global scrape targets for vmagent.
@@ -271,4 +388,5 @@ http://localhost/<namespace>/victoria-traces/insert/opentelemetry/v1/traces
 - `victoria-*.persistence.existingClaim`: use an existing PVC instead of creating one.
 - `nodeSelector`, `tolerations`, `affinity`: scheduling controls per chart.
 - `vmagent.ingress.*`: expose vmagent under `global.paths.vmagent`.
-- `victoria-logs-collector.*`: log collector config (DaemonSet) and `remoteWrite` (use `/insert/native` and include namespace path prefix when enabled).
+- `fluent-bit.*`: log-tailer (Fluent Bit DaemonSet) config, resources, Lua extraction of pod/namespace/container/service from log paths, hostPath mounts; runs as root to read host logs.
+- `victoria-logs-collector.*`: vlagent log collector (DaemonSet) config and `remoteWrite` (use `/insert/native` and include namespace path prefix when enabled).

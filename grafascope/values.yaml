@@ -140,6 +140,8 @@ victoria-traces:
 
 vmagent:
   enabled: true
+  # Include default self-monitoring jobs (victoria-metrics, victoria-logs, victoria-traces, grafana, fluent-bit).
+  includeDefaultScrapeJobs: false
   # Metrics scraper image/version.
   image:
     repository: victoriametrics/vmagent
@@ -147,8 +149,7 @@ vmagent:
     pullPolicy: IfNotPresent
   ingress:
     enabled: true
-  # Additional scrape targets (appended to default self-monitoring jobs).
-  # Default jobs (victoria-metrics, victoria-logs, victoria-traces, grafana) are always included.
+  # Additional scrape targets. When includeDefaultScrapeJobs is true, self-monitoring jobs are prepended.
   scrapeTargets:
     - job_name: demo-apps
       metrics_path: /metrics
