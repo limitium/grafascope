@@ -266,6 +266,19 @@ fluent-bit:
     nodeAccess: false
     eventsAccess: false
   config:
+    customParsers: |
+      [PARSER]
+          Name docker_no_time
+          Format json
+          Time_Keep Off
+          Time_Key time
+          Time_Format %Y-%m-%dT%H:%M:%S.%L
+      [MULTILINE_PARSER]
+          name          stacktrace
+          type          regex
+          flush_timeout 2000
+          rule          "start_state"   "/.*/"                    "cont"
+          rule          "cont"          "/^\\s+at |^Caused by:|^\\t|^\\s+File \"/|^\\s*\\.\\.\\.\\s*\\d+ more/" "cont"
     service: |
       [SERVICE]
           Daemon Off
@@ -287,6 +300,12 @@ fluent-bit:
           Mem_Buf_Limit 5MB
           Skip_Long_Lines On
     filters: |
+      # Merge multiline stack traces (Java, Python, Go) into single log entries.
+      [FILTER]
+          Name multiline
+          Match kube.*
+          multiline.key_content log
+          multiline.parser stacktrace
       # Extract pod, namespace, container from /var/log/containers filename (pod_namespace_container-id.log).
       [FILTER]
           Name lua
