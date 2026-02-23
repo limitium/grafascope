@@ -1,0 +1,46 @@
+{{- if and .Values.ingress.enabled .Values.ingressGrpc.enabled -}}
+{{- $ctx := . -}}
+{{- $path := .Values.ingressGrpc.path -}}
+{{- if not $path -}}
+{{- $path = include "victoria-traces.globalPathGrpc" $ctx -}}
+{{- end -}}
+{{- $grpcPath := include "grafascope.pathWithNamespace" (dict "path" $path "namespace" $ctx.Release.Namespace) -}}
+{{- $hosts := .Values.global.hosts -}}
+{{- if not $hosts -}}
+{{- $hosts = list (required "global.domain is required" .Values.global.domain) -}}
+{{- end -}}
+{{- $svcName := include "victoriatraces.fullname" $ctx -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $svcName }}-grpc
+  labels:
+    {{- include "victoriatraces.labels" $ctx | nindent 4 }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    {{- range $host := $hosts }}
+    {{- $hostName := $host }}
+    {{- if kindIs "map" $host }}
+    {{- $hostName = $host.host }}
+    {{- end }}
+    - host: {{ $hostName | quote }}
+      http:
+        paths:
+          - path: {{ printf "%s(/|$)(.*)" (trimSuffix "/" $grpcPath) | quote }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ $svcName }}
+                port:
+                  number: 4317
+    {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+{{- end }}
