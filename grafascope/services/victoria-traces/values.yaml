@@ -12,6 +12,10 @@ ingress:
   annotations: {}
   hosts: []
   tls: []
+# Ingress for OTLP gRPC (port 4317) at path /<namespace>/victoria-traces-grpc
+ingressGrpc:
+  enabled: false
+  path: "" # default: global.paths.victoriaTracesGrpc
 
 persistence:
   enabled: true

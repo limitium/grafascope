@@ -50,3 +50,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- define "victoria-traces.globalPort" -}}
 {{- default "" (index .Values.global.ports "victoriaTraces") -}}
 {{- end -}}
+
+{{- define "victoria-traces.globalPathGrpc" -}}
+{{- $path := (index .Values.global.paths "victoriaTracesGrpc") -}}
+{{- if not $path -}}
+{{- $path = "/victoria-traces-grpc" -}}
+{{- end -}}
+{{- $path -}}
+{{- end -}}

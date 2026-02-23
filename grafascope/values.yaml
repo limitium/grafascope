@@ -21,6 +21,7 @@ global:
     victoriaMetrics: /victoria-metrics
     victoriaLogs: /victoria-logs
     victoriaTraces: /victoria-traces
+    victoriaTracesGrpc: /victoria-traces-grpc
     vmagent: /vmagent
   # Shared service ports (camelCase keys).
   ports:
@@ -126,6 +127,9 @@ victoria-traces:
     className: nginx
     annotations:
       nginx.ingress.kubernetes.io/use-regex: "true"
+  ingressGrpc:
+    enabled: true
+    path: "" # uses global.paths.victoriaTracesGrpc (/victoria-traces-grpc)
   persistence:
     # Storage for traces data.
     enabled: true
