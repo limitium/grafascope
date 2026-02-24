@@ -68,8 +68,7 @@ Installable charts live under `grafascope/releases/*`, while deployable charts
 live under `grafascope/services` and `grafascope/scrapers`. Shared library
 charts live under `grafascope/libs`.
 
-`gfs-user` uses `global.gfsUser.username` from `grafascope/values.yaml`. The
-log collector ServiceAccount name is sourced from the same global value.
+`gfs-user` uses `global.gfsUser.username` from `grafascope/values.yaml`. By default it creates a ServiceAccount and namespace-scoped Role/RoleBinding in the release namespace; set `gfs-user.rbac.clusterWide: true` for ClusterRole/ClusterRoleBinding (e.g. when the collector needs node metadata). The log collector ServiceAccount name is sourced from the same global value.
 
 Default ingress is configured for a single domain (`localhost`) with subpaths.
 Use the `global.*` block in `grafascope/values.yaml` to set hosts, protocol,
@@ -170,8 +169,7 @@ and open `http://localhost:8080/<namespace>/grafana`.
 ## gfs-user RBAC (copy/paste)
 
 Use this if you want to create the ServiceAccount + RBAC manually in the Kubernetes UI
-instead of installing the `gfs-user` chart. This mirrors the default `gfs-user` chart
-permissions (cluster-wide).
+instead of installing the `gfs-user` chart. The chart default is **namespace scope** (Role + RoleBinding in the release namespace). Below is the **cluster-wide** variant (ClusterRole + ClusterRoleBinding); for namespace-only, use Role/RoleBinding and omit cluster-scoped resources (e.g. `nodes`, `namespaces`, `persistentvolumes`, `componentstatuses`).
 
 ```yaml
 apiVersion: v1
@@ -376,7 +374,7 @@ http://localhost/<namespace>/victoria-traces/insert/opentelemetry/v1/traces
 - `global.paths.*`: shared subpaths for ingress routing and app prefixes (camelCase keys like `victoriaMetrics`).
 - `global.clusterName`: cluster label added to logs for multi-cluster filtering.
 - `global.gfsUser.username`: shared ServiceAccount name for gfs-user and logs collector.
-- `gfs-user.rbac.clusterWide`: must be `true` if the collector uses node metadata (required to start).
+- `gfs-user.rbac.clusterWide`: default `false` (ServiceAccount + Role/RoleBinding in release namespace). Set `true` for ClusterRole/ClusterRoleBinding if the collector needs node metadata.
 - `global.scrapers.metricsTargets`: optional global scrape targets for vmagent.
 - `grafana.resources`, `victoria-*.resources`, `vmagent.resources`: centralized resource defaults in this file.
 - `grafana.server.*`: configure Grafana subpath serving.

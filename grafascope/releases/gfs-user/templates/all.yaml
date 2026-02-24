@@ -14,6 +14,8 @@ metadata:
 
 ---
 {{- if .Values.rbac.create }}
+{{- $filtered := without .Values.rbac.resources "componentstatuses" "namespaces" "nodes" "persistentvolumes" }}
+{{- $resources := ternary .Values.rbac.resources $filtered .Values.rbac.clusterWide }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: {{ ternary "ClusterRole" "Role" .Values.rbac.clusterWide }}
 metadata:
@@ -23,7 +25,7 @@ metadata:
   {{- end }}
 rules:
   - apiGroups: {{ toYaml .Values.rbac.apiGroups | nindent 6 }}
-    resources: {{ toYaml .Values.rbac.resources | nindent 6 }}
+    resources: {{ toYaml $resources | nindent 6 }}
     verbs: {{ toYaml .Values.rbac.verbs | nindent 6 }}
 {{- end }}
 

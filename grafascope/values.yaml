@@ -380,9 +380,8 @@ gfs-user:
   rbac:
     # Set false if Role/Binding is created outside Helm.
     create: true
-    # true => ClusterRole/ClusterRoleBinding (required if you include cluster-scoped resources like nodes/namespaces/PVs)
-    # false => Role/RoleBinding (namespace-scoped; you must remove cluster-scoped resources from the list)
-    clusterWide: true
+    # false => Role/RoleBinding in release namespace (default). true => ClusterRole/ClusterRoleBinding (e.g. for node metadata).
+    clusterWide: false
     roleName: "gfs-user-role"
     bindingName: "gfs-user-binding"
     apiGroups:

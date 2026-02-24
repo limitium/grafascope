@@ -7,9 +7,9 @@ serviceAccount:
 
 rbac:
   create: true
-  # true => ClusterRole/ClusterRoleBinding (required if you include cluster-scoped resources like nodes/namespaces/PVs)
-  # false => Role/RoleBinding (namespace-scoped; you must remove cluster-scoped resources from the list)
-  clusterWide: true
+  # Scope: namespace => Role + RoleBinding in release namespace (default). cluster => ClusterRole + ClusterRoleBinding.
+  # Use cluster when collectors need cluster-scoped resources (e.g. node metadata).
+  clusterWide: false
   roleName: "gfs-user-role"
   bindingName: "gfs-user-binding"
   apiGroups:
