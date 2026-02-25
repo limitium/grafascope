@@ -376,7 +376,8 @@ gfs-user:
   serviceAccount:
     # Set false if SA/RBAC is created outside Helm.
     create: true
-    name: gfs-user # should match global.gfsUser.username
+    # Name defaults to global.gfsUser.username when set; otherwise chart fullname.
+    name: ""
   rbac:
     # Set false if Role/Binding is created outside Helm.
     create: true
