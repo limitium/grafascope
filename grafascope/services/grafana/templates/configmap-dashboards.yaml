@@ -12,6 +12,8 @@ data:
 {{ (.Files.Get "dashboards/grafascope-scrape-targets.json") | nindent 4 }}
   grafascope-logs.json: |
 {{ (.Files.Get "dashboards/grafascope-logs.json") | nindent 4 }}
+  kafka-performance.json: |
+{{ (.Files.Get "dashboards/kafka-performance.json") | nindent 4 }}
 {{- if false }}
   main-dashboard.json: |
     {
