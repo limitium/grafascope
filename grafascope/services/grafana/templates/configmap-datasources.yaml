@@ -16,7 +16,8 @@ data:
         access: proxy
         {{- $vmPort := default 8428 (index .Values.global.ports "victoriaMetrics") }}
         {{- $vmPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaMetrics")) "namespace" .Release.Namespace) }}
-        {{- $vmUrl := printf "%s://victoria-metrics:%v%s" (default "http" .Values.global.protocol) $vmPort $vmPath }}
+        {{- /* In-cluster: always http; global.protocol is for external browser URL only */}}
+        {{- $vmUrl := printf "http://victoria-metrics:%v%s" $vmPort $vmPath }}
         url: {{ default $vmUrl (index .Values.datasources "victoria-metrics-url") | quote }}
         isDefault: true
         jsonData:
@@ -28,7 +29,7 @@ data:
         access: proxy
         {{- $vlPort := default 9428 (index .Values.global.ports "victoriaLogs") }}
         {{- $vlPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaLogs")) "namespace" .Release.Namespace) }}
-        {{- $vlUrl := printf "%s://victoria-logs:%v%s" (default "http" .Values.global.protocol) $vlPort $vlPath }}
+        {{- $vlUrl := printf "http://victoria-logs:%v%s" $vlPort $vlPath }}
         url: {{ default $vlUrl (index .Values.datasources "victoria-logs-url") | quote }}
       - name: VictoriaTraces
         type: jaeger
@@ -37,7 +38,7 @@ data:
         {{- $vtPort := default 9410 (index .Values.global.ports "victoriaTraces") }}
         {{- $vtPath := include "grafascope.pathWithNamespace" (dict "path" (default "" (index .Values.global.paths "victoriaTraces")) "namespace" .Release.Namespace) }}
         {{- $vtJaegerPath := printf "%s/select/jaeger" $vtPath }}
-        {{- $vtUrl := printf "%s://victoria-traces:%v%s" (default "http" .Values.global.protocol) $vtPort $vtJaegerPath }}
+        {{- $vtUrl := printf "http://victoria-traces:%v%s" $vtPort $vtJaegerPath }}
         url: {{ default $vtUrl (index .Values.datasources "victoria-traces-url") | quote }}
         jsonData:
           nodeGraph:

@@ -1,6 +1,4 @@
 # Global defaults shared by all releases.
-# Option B (Grafana): URL/domain are derived from global. Set domain + protocol (and paths.grafana);
-# Grafana gets GF_SERVER_DOMAIN, GF_SERVER_ROOT_URL, and CSRF trusted origins from these.
 global:
   # Ingress host/protocol used to build URLs (Grafana rootUrl = protocol + domain + paths.grafana).
   domain: localhost
@@ -61,8 +59,11 @@ grafana:
   ingress:
     enabled: true
     className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   server:
-    # Option B: rootUrl/domain/CSRF derived from global; only serveFromSubPath needed here.
     serveFromSubPath: true
   datasources:
     enabled: true

@@ -107,20 +107,17 @@ spec:
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: "true"
             {{- end }}
-            {{- /* CSRF + cookies: only when root URL is set (minimal; no extra headers) */}}
+            {{- /* CSRF: working setup uses domain only (no protocol, no path). */}}
             {{- if $rootUrl }}
             {{- $rootUrlTrim := trimSuffix "/" $rootUrl }}
-            {{- $origin := $rootUrlTrim }}
+            {{- $csrfOrigin := "" }}
             {{- if and .Values.global .Values.global.domain }}
-            {{- $protocol := default "http" .Values.global.protocol }}
-            {{- $origin = printf "%s://%s" $protocol .Values.global.domain }}
-            {{- end }}
-            {{- $trustedOrigins := list $origin }}
-            {{- if ne $rootUrlTrim $origin }}
-            {{- $trustedOrigins = append $trustedOrigins $rootUrlTrim }}
+            {{- $csrfOrigin = .Values.global.domain }}
+            {{- else }}
+            {{- $csrfOrigin = regexReplaceAll "^https?://([^/]+).*" $rootUrlTrim "$1" }}
             {{- end }}
             - name: GF_SECURITY_CSRF_TRUSTED_ORIGINS
-              value: {{ join "," $trustedOrigins | quote }}
+              value: {{ $csrfOrigin | quote }}
             - name: GF_SECURITY_COOKIE_SAME_SITE
               value: {{ .Values.server.cookieSameSite | default "lax" | quote }}
             {{- $protocol := "http" }}
@@ -152,20 +149,25 @@ spec:
             - name: tmp
               mountPath: /tmp
           {{- $healthPath := "/api/health" }}
-          {{- if and .Values.server.serveFromSubPath .Values.global .Values.global.paths.grafana }}
+          {{- if .Values.server.serveFromSubPath }}
+          {{- if and .Values.global .Values.global.paths.grafana }}
           {{- $healthPath = printf "%s/api/health" (include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace)) }}
+          {{- else if $rootUrl }}
+          {{- $pathFromRoot := regexReplaceAll "^https?://[^/]+" (trimSuffix "/" $rootUrl) "" }}
+          {{- $healthPath = printf "%s/api/health" (default "/" $pathFromRoot) }}
+          {{- end }}
           {{- end }}
           readinessProbe:
             httpGet:
               path: {{ $healthPath | quote }}
               port: http
-            initialDelaySeconds: 10
+            initialDelaySeconds: 15
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: {{ $healthPath | quote }}
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 45
             periodSeconds: 20
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
