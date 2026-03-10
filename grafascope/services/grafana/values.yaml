@@ -51,9 +51,8 @@ tolerations: []
 affinity: {}
 
 server:
-  # Optional Grafana server overrides (e.g., for subpath hosting).
+  # Minimal URL/domain: set rootUrl (and optionally domain, serveFromSubPath). Or set global.domain + global.paths.grafana to derive rootUrl.
   domain: ""
   rootUrl: ""
   serveFromSubPath: false
-  # Cookie SameSite when behind reverse proxy (global.domain). Use "lax" or "none" (with secure).
-  cookieSameSite: "none"
+  cookieSameSite: "lax"

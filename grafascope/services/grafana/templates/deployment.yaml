@@ -85,8 +85,9 @@ spec:
             - name: GF_INSTALL_PLUGINS
               value: {{ join "," .Values.plugins | quote }}
             {{- end }}
+            {{- /* URL/domain: set only when deployer provides server.rootUrl/server.domain or global.domain + paths */}}
             {{- $domain := .Values.server.domain }}
-            {{- if .Values.global.domain }}
+            {{- if and .Values.global .Values.global.domain }}
             {{- $domain = .Values.global.domain }}
             {{- end }}
             {{- if $domain }}
@@ -94,7 +95,7 @@ spec:
               value: {{ $domain | quote }}
             {{- end }}
             {{- $rootUrl := .Values.server.rootUrl }}
-            {{- if and (not $rootUrl) .Values.global.domain .Values.global.paths.grafana }}
+            {{- if and (not $rootUrl) .Values.global .Values.global.domain .Values.global.paths.grafana }}
             {{- $rootPath := include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace) }}
             {{- $rootUrl = printf "%s://%s%s/" (default "http" .Values.global.protocol) .Values.global.domain $rootPath }}
             {{- end }}
@@ -106,15 +107,29 @@ spec:
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: "true"
             {{- end }}
-            {{- /* CSRF and cookies for reverse proxy (global.domain) */}}
-            {{- if .Values.global.domain }}
+            {{- /* CSRF + cookies: only when root URL is set (minimal; no extra headers) */}}
+            {{- if $rootUrl }}
+            {{- $rootUrlTrim := trimSuffix "/" $rootUrl }}
+            {{- $origin := $rootUrlTrim }}
+            {{- if and .Values.global .Values.global.domain }}
+            {{- $protocol := default "http" .Values.global.protocol }}
+            {{- $origin = printf "%s://%s" $protocol .Values.global.domain }}
+            {{- end }}
+            {{- $trustedOrigins := list $origin }}
+            {{- if ne $rootUrlTrim $origin }}
+            {{- $trustedOrigins = append $trustedOrigins $rootUrlTrim }}
+            {{- end }}
             - name: GF_SECURITY_CSRF_TRUSTED_ORIGINS
-              value: {{ printf "%s://%s" (default "http" .Values.global.protocol) .Values.global.domain | quote }}
-            - name: GF_SECURITY_CSRF_ADDITIONAL_HEADERS
-              value: "X-Forwarded-Host,X-Forwarded-Port,X-Forwarded-Proto"
+              value: {{ join "," $trustedOrigins | quote }}
             - name: GF_SECURITY_COOKIE_SAME_SITE
               value: {{ .Values.server.cookieSameSite | default "lax" | quote }}
-            {{- if eq (default "http" .Values.global.protocol) "https" }}
+            {{- $protocol := "http" }}
+            {{- if and .Values.global .Values.global.protocol (eq .Values.global.protocol "https") }}
+            {{- $protocol = "https" }}
+            {{- else if hasPrefix $rootUrlTrim "https://" }}
+            {{- $protocol = "https" }}
+            {{- end }}
+            {{- if eq $protocol "https" }}
             - name: GF_SECURITY_COOKIE_SECURE
               value: "true"
             {{- end }}
@@ -137,7 +152,7 @@ spec:
             - name: tmp
               mountPath: /tmp
           {{- $healthPath := "/api/health" }}
-          {{- if and .Values.server.serveFromSubPath .Values.global.paths.grafana }}
+          {{- if and .Values.server.serveFromSubPath .Values.global .Values.global.paths.grafana }}
           {{- $healthPath = printf "%s/api/health" (include "grafascope.pathWithNamespace" (dict "path" .Values.global.paths.grafana "namespace" .Release.Namespace)) }}
           {{- end }}
           readinessProbe:

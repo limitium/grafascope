@@ -1,6 +1,8 @@
 # Global defaults shared by all releases.
+# Option B (Grafana): URL/domain are derived from global. Set domain + protocol (and paths.grafana);
+# Grafana gets GF_SERVER_DOMAIN, GF_SERVER_ROOT_URL, and CSRF trusted origins from these.
 global:
-  # Ingress host/protocol used to build URLs.
+  # Ingress host/protocol used to build URLs (Grafana rootUrl = protocol + domain + paths.grafana).
   domain: localhost
   # Optional list of ingress hosts; when set, overrides global.domain.
   # Use a list of host strings (e.g., ["qwe.asd", "foo.bar"]).
@@ -60,7 +62,7 @@ grafana:
     enabled: true
     className: nginx
   server:
-    # Serve from global.paths.grafana.
+    # Option B: rootUrl/domain/CSRF derived from global; only serveFromSubPath needed here.
     serveFromSubPath: true
   datasources:
     enabled: true
