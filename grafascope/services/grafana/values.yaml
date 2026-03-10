@@ -54,3 +54,5 @@ server:
   domain: ""
   rootUrl: ""
   serveFromSubPath: false
+  # Cookie SameSite when behind reverse proxy (global.domain). Use "lax" or "none" (with secure).
+  cookieSameSite: "none"
