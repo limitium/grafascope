@@ -44,6 +44,13 @@ global:
 
 # Service and scraper overrides are centralized here.
 grafana:
+  # Admin credentials required: override via -f, --set, or CI. No defaults in chart.
+  # Example: admin.existingSecret: "my-grafana-admin" (keys: admin-user, admin-password)
+  # Or: admin.user: "admin" and admin.password: "<secure-password>"
+  # admin:
+  #   existingSecret: ""
+  #   user: ""
+  #   password: ""
   # Custom Grafana image with offline plugins.
   image:
     repository: limitium/grafanaplg

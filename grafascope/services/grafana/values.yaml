@@ -13,10 +13,11 @@ ingress:
   tls: []
 
 admin:
-  # Local admin credentials (override in production).
-  existingSecret: "" # if set, uses this secret with keys admin-user/admin-password
-  user: admin
-  password: admin
+  # Required: set existingSecret (recommended) or both user and password.
+  # existingSecret: secret with keys admin-user, admin-password
+  existingSecret: ""
+  user: ""
+  password: ""
 
 datasources:
   # Provision Victoria datasources.
