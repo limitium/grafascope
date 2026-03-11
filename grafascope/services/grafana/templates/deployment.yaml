@@ -118,18 +118,6 @@ spec:
             {{- end }}
             - name: GF_SECURITY_CSRF_TRUSTED_ORIGINS
               value: {{ $csrfOrigin | quote }}
-            - name: GF_SECURITY_COOKIE_SAME_SITE
-              value: {{ .Values.server.cookieSameSite | default "lax" | quote }}
-            {{- $protocol := "http" }}
-            {{- if and .Values.global .Values.global.protocol (eq .Values.global.protocol "https") }}
-            {{- $protocol = "https" }}
-            {{- else if hasPrefix $rootUrlTrim "https://" }}
-            {{- $protocol = "https" }}
-            {{- end }}
-            {{- if eq $protocol "https" }}
-            - name: GF_SECURITY_COOKIE_SECURE
-              value: "true"
-            {{- end }}
             {{- end }}
           volumeMounts:
             {{- if .Values.datasources.enabled }}
