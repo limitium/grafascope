@@ -1,7 +1,7 @@
 {
   "uid": "kafka-performance",
-  "title": "Kafka Performance (Streams & Connectors)",
-  "description": "Topic-level lag, RPS per consumer, ETA (lag/RPS), and related metrics. Data from VictoriaMetrics. Expects kafka_exporter metrics: kafka_consumergroup_lag, kafka_consumergroup_current_offset.",
+  "title": "Kafka Performance",
+  "description": "Topic-level lag, RPS, ETA. Uses Kafka consumer JMX metrics: kafka_consumer_fetch_manager_records_lag, kafka_consumer_fetch_manager_records_consumed_total (labels: client_id, topic, partition).",
   "schemaVersion": 39,
   "version": 1,
   "refresh": "30s",
@@ -9,11 +9,11 @@
   "templating": {
     "list": [
       {
-        "name": "consumer_group",
-        "label": "Consumer group",
+        "name": "client_id",
+        "label": "Client ID",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-        "query": "label_values(kafka_consumergroup_lag, consumergroup)",
+        "query": "label_values(kafka_consumer_fetch_manager_records_lag, client_id)",
         "refresh": 1,
         "multi": true,
         "includeAll": true,
@@ -25,7 +25,7 @@
         "label": "Topic",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-        "query": "label_values(kafka_consumergroup_lag{consumergroup=~\"$consumer_group\"}, topic)",
+        "query": "label_values(kafka_consumer_fetch_manager_records_lag{client_id=~\"$client_id\"}, topic)",
         "refresh": 1,
         "multi": true,
         "includeAll": true,
@@ -36,33 +36,25 @@
   },
   "panels": [
     {
-      "id": 100,
-      "type": "row",
-      "title": "Topic overview (lag, RPS, ETA)",
-      "collapsed": false,
-      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
-    },
-    {
       "id": 1,
       "type": "table",
-      "title": "Topic status: Lag, RPS, ETA",
-      "description": "Per-topic total lag, consumption rate (RPS), and estimated time to catch up (ETA = lag / RPS). ETA is empty when RPS is 0.",
+      "title": "Topic: Lag, RPS, ETA",
       "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
       "targets": [
         {
-          "expr": "sum by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"})",
+          "expr": "sum by (topic) (kafka_consumer_fetch_manager_records_lag{client_id=~\"$client_id\", topic=~\"$topic\"})",
           "refId": "Lag",
           "format": "table",
           "instant": true
         },
         {
-          "expr": "sum by (topic) (rate(kafka_consumergroup_current_offset{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_consumer_fetch_manager_records_consumed_total{client_id=~\"$client_id\", topic=~\"$topic\"}[1m]))",
           "refId": "RPS",
           "format": "table",
           "instant": true
         },
         {
-          "expr": "sum by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}) / clamp_min(sum by (topic) (rate(kafka_consumergroup_current_offset{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}[1m])), 0.001)",
+          "expr": "sum by (topic) (kafka_consumer_fetch_manager_records_lag{client_id=~\"$client_id\", topic=~\"$topic\"}) / clamp_min(sum by (topic) (rate(kafka_consumer_fetch_manager_records_consumed_total{client_id=~\"$client_id\", topic=~\"$topic\"}[1m])), 0.001)",
           "refId": "ETA",
           "format": "table",
           "instant": true
@@ -70,7 +62,7 @@
       ],
       "transformations": [
         { "id": "merge", "options": { "byField": "topic" } },
-        { "id": "organize", "options": { "renameByName": { "topic": "Topic", "Value #Lag": "Lag", "Value #RPS": "RPS (msg/s)", "Value #ETA": "ETA (s)" } } }
+        { "id": "organize", "options": { "renameByName": { "topic": "Topic" } } }
       ],
       "fieldConfig": {
         "defaults": {
@@ -82,26 +74,6 @@
             "matcher": { "id": "byName", "options": "ETA" },
             "properties": [
               { "id": "unit", "value": "s" },
-              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "yellow", "value": 300 },
-                    { "color": "orange", "value": 3600 },
-                    { "color": "red", "value": 86400 }
-                  ]
-                }
-              }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "ETA (s)" },
-            "properties": [
-              { "id": "unit", "value": "s" },
-              { "id": "custom.cellOptions", "value": { "type": "color-background" } },
               {
                 "id": "thresholds",
                 "value": {
@@ -136,23 +108,16 @@
         ]
       },
       "options": { "showHeader": true, "cellHeight": "sm" },
-      "gridPos": { "x": 0, "y": 1, "w": 24, "h": 10 }
-    },
-    {
-      "id": 101,
-      "type": "row",
-      "title": "Charts: Lag & RPS by topic",
-      "collapsed": false,
-      "gridPos": { "x": 0, "y": 11, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 }
     },
     {
       "id": 2,
-      "type": "barchart",
-      "title": "Lag per topic",
+      "type": "timeseries",
+      "title": "Lag by topic",
       "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
       "targets": [
         {
-          "expr": "sum by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"})",
+          "expr": "sum by (topic) (kafka_consumer_fetch_manager_records_lag{client_id=~\"$client_id\", topic=~\"$topic\"})",
           "refId": "A",
           "legendFormat": "{{topic}}"
         }
@@ -161,51 +126,21 @@
         "defaults": {
           "color": { "mode": "palette-classic" },
           "unit": "short",
-          "custom": { "drawStyle": "bars", "barAlignment": 0 }
+          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10 }
         },
         "overrides": []
       },
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
-      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 }
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 8 }
     },
     {
       "id": 3,
-      "type": "barchart",
-      "title": "RPS per topic (msg/s)",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "sum by (topic) (rate(kafka_consumergroup_current_offset{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}[1m]))",
-          "refId": "A",
-          "legendFormat": "{{topic}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "unit": "short",
-          "custom": { "drawStyle": "bars", "barAlignment": 0 }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
-      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 }
-    },
-    {
-      "id": 102,
-      "type": "row",
-      "title": "Time series: Lag & RPS over time",
-      "collapsed": false,
-      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 1 }
-    },
-    {
-      "id": 4,
       "type": "timeseries",
-      "title": "Lag over time (per topic)",
+      "title": "RPS by topic (msg/s)",
       "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
       "targets": [
         {
-          "expr": "sum by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"})",
+          "expr": "sum by (topic) (rate(kafka_consumer_fetch_manager_records_consumed_total{client_id=~\"$client_id\", topic=~\"$topic\"}[1m]))",
           "refId": "A",
           "legendFormat": "{{topic}}"
         }
@@ -219,166 +154,7 @@
         "overrides": []
       },
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
-      "gridPos": { "x": 0, "y": 21, "w": 12, "h": 8 }
-    },
-    {
-      "id": 5,
-      "type": "timeseries",
-      "title": "RPS over time (per topic)",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "sum by (topic) (rate(kafka_consumergroup_current_offset{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}[1m]))",
-          "refId": "A",
-          "legendFormat": "{{topic}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "unit": "short",
-          "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10 }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
-      "gridPos": { "x": 12, "y": 21, "w": 12, "h": 8 }
-    },
-    {
-      "id": 103,
-      "type": "row",
-      "title": "Max partition lag & consumer group members",
-      "collapsed": false,
-      "gridPos": { "x": 0, "y": 29, "w": 24, "h": 1 }
-    },
-    {
-      "id": 6,
-      "type": "table",
-      "title": "Max partition lag per topic",
-      "description": "Worst partition lag per topic (useful to spot skew).",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "max by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"})",
-          "refId": "A",
-          "format": "table",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 10000 },
-              { "color": "red", "value": 100000 }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": { "showHeader": true },
-      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 6 }
-    },
-    {
-      "id": 7,
-      "type": "stat",
-      "title": "Consumer group members",
-      "description": "Number of members in selected consumer group(s).",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "sum(kafka_consumergroup_members{consumergroup=~\"$consumer_group\"})",
-          "refId": "A",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null } ] }
-        },
-        "overrides": []
-      },
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "center" },
-      "gridPos": { "x": 12, "y": 30, "w": 6, "h": 6 }
-    },
-    {
-      "id": 8,
-      "type": "stat",
-      "title": "Topics with lag",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "count(sum by (topic) (kafka_consumergroup_lag{consumergroup=~\"$consumer_group\", topic=~\"$topic\"}) > 0)",
-          "refId": "A",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null } ] }
-        },
-        "overrides": []
-      },
-      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "center" },
-      "gridPos": { "x": 18, "y": 30, "w": 6, "h": 6 }
-    },
-    {
-      "id": 104,
-      "type": "row",
-      "title": "Kafka Connect (optional)",
-      "description": "If you scrape Kafka Connect JMX, these panels show connector throughput and errors.",
-      "collapsed": true,
-      "gridPos": { "x": 0, "y": 36, "w": 24, "h": 1 }
-    },
-    {
-      "id": 9,
-      "type": "timeseries",
-      "title": "Sink record send rate (per connector)",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "sum by (connector) (kafka_connect_sink_record_send_rate)",
-          "refId": "A",
-          "legendFormat": "{{connector}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
-        "overrides": []
-      },
-      "gridPos": { "x": 0, "y": 37, "w": 12, "h": 6 }
-    },
-    {
-      "id": 10,
-      "type": "timeseries",
-      "title": "Connector task errors (rate)",
-      "datasource": { "type": "prometheus", "uid": "VictoriaMetrics" },
-      "targets": [
-        {
-          "expr": "sum by (connector) (rate(kafka_connect_task_error_total[5m]))",
-          "refId": "A",
-          "legendFormat": "{{connector}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 0.001 }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": { "x": 12, "y": 37, "w": 12, "h": 6 }
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 8 }
     }
   ]
 }
