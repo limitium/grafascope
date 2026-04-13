@@ -6,16 +6,23 @@ service:
       port: 4317
       targetPort: 4317
 
-ingress:
+httpRoute:
   enabled: false
-  className: nginx
   annotations: {}
-  hosts: []
-  tls: []
-# Ingress for OTLP gRPC (port 4317) at path /<namespace>/victoria-traces-grpc
-ingressGrpc:
+  filters: []
+# HTTPRoute for OTLP gRPC (port 4317) at path /<namespace>/victoria-traces-grpc.
+# Uses URLRewrite filter to strip the path prefix before forwarding to the backend,
+# replicating the old nginx rewrite-target behavior.
+httpRouteGrpc:
   enabled: false
   path: "" # default: global.paths.victoriaTracesGrpc
+  annotations: {}
+  filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
 
 persistence:
   enabled: true

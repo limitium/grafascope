@@ -1,0 +1,14 @@
+
+{{- $path := .Values.httpRouteGrpc.path -}}
+{{- if not $path -}}
+{{- $path = include "victoria-traces.globalPathGrpc" . -}}
+{{- end -}}
+{{- include "grafascope.common.httpRoute" (dict
+  "context" .
+  "name" (printf "%s-grpc" (include "victoriatraces.fullname" .))
+  "labels" (include "victoriatraces.labels" .)
+  "serviceName" (include "victoriatraces.fullname" .)
+  "servicePort" 4317
+  "path" $path
+  "httpRoute" .Values.httpRouteGrpc
+) }}

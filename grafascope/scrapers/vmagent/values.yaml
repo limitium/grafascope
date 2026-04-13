@@ -5,12 +5,10 @@ service:
   type: ClusterIP
   port: "" # defaults to global.ports.vmagent when empty
 
-ingress:
-  # Ingress is disabled by default in the component chart.
+httpRoute:
   enabled: false
-  className: nginx
   annotations: {}
-  tls: []
+  filters: []
 
 replicaCount: 1 # vmagent replicas
 

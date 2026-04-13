@@ -1,8 +1,8 @@
 # Global defaults shared by all releases.
 global:
-  # Ingress host/protocol used to build URLs (Grafana rootUrl = protocol + domain + paths.grafana).
+  # Host/protocol used to build URLs (Grafana rootUrl = protocol + domain + paths.grafana).
   domain: localhost
-  # Optional list of ingress hosts; when set, overrides global.domain.
+  # Optional list of route hostnames; when set, overrides global.domain.
   # Use a list of host strings (e.g., ["qwe.asd", "foo.bar"]).
   hosts: []
   protocol: http
@@ -14,7 +14,18 @@ global:
   # Shared ServiceAccount name for gfs-user + logs collector.
   gfsUser:
     username: gfs-user
-  # Shared ingress subpaths (kebab-case keys).
+  # Gateway API configuration shared by all HTTPRoute/GRPCRoute resources.
+  gateway:
+    enabled: false
+    routes:
+      parentRefs: []
+      # - name: gateway-svc
+      #   namespace: tr-gateway
+      #   sectionName: https
+      hostnames: []
+      # - "*.staging.echonet"
+      # - "*.xnp.net.intra"
+  # Shared subpaths (kebab-case keys).
   paths:
     grafana: /grafana
     # Use camelCase keys to match vendored Victoria charts.
@@ -56,13 +67,12 @@ grafana:
     repository: limitium/grafanaplg
     tag: 11.2.0-with-vl.5
     pullPolicy: IfNotPresent
-  ingress:
+  httpRoute:
     enabled: true
-    className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
-      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    annotations: {}
+    filters: []
+    timeouts:
+      request: "3600s"
   server:
     serveFromSubPath: true
   datasources:
@@ -86,11 +96,10 @@ victoria-metrics:
     repository: victoriametrics/victoria-metrics
     tag: "v1.110.0"
     pullPolicy: IfNotPresent
-  ingress:
+  httpRoute:
     enabled: true
-    className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/use-regex: "true"
+    annotations: {}
+    filters: []
   persistence:
     # Storage for time series data.
     enabled: true
@@ -109,11 +118,10 @@ victoria-logs:
     repository: victoriametrics/victoria-logs
     tag: "latest"
     pullPolicy: IfNotPresent
-  ingress:
+  httpRoute:
     enabled: true
-    className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/use-regex: "true"
+    annotations: {}
+    filters: []
   persistence:
     # Storage for logs data.
     enabled: true
@@ -132,14 +140,20 @@ victoria-traces:
     repository: victoriametrics/victoria-traces
     tag: "latest"
     pullPolicy: IfNotPresent
-  ingress:
+  httpRoute:
     enabled: true
-    className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/use-regex: "true"
-  ingressGrpc:
+    annotations: {}
+    filters: []
+  httpRouteGrpc:
     enabled: true
     path: "" # uses global.paths.victoriaTracesGrpc (/victoria-traces-grpc)
+    annotations: {}
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /
   persistence:
     # Storage for traces data.
     enabled: true
@@ -161,8 +175,10 @@ vmagent:
     repository: victoriametrics/vmagent
     tag: "v1.110.0"
     pullPolicy: IfNotPresent
-  ingress:
+  httpRoute:
     enabled: true
+    annotations: {}
+    filters: []
   # Additional scrape targets. When includeDefaultScrapeJobs is true, self-monitoring jobs are prepended.
   scrapeTargets:
     - job_name: demo-apps
@@ -234,7 +250,7 @@ fluent-bit:
         if not path then return 1, timestamp, record end
         local filename = path:match("([^/]+)$") or ""
         filename = filename:gsub("%.log$", "")
-        filename = filename:gsub("%-[0-9a-fA-F]{64}$", "")
+        filename = filename:gsub("%-[0-9a-fA-F]+$", "")
         local parts = {}
         for part in (filename .. "_"):gmatch("(.-)_") do
           table.insert(parts, part)
@@ -372,12 +388,12 @@ fluent-bit:
     - name: varlog
       mountPath: /var/log/pods
       readOnly: true
-    - name: varlibdockercontainers
-      mountPath: /var/log/containers
-      readOnly: true
     - name: etcmachineid
       mountPath: /tmp/etc/machine-id
       readOnly: true
+    - name: varlibdockercontainers
+      readOnly: true
+      mountPath: /var/log/containers
 
 gfs-user:
   # ServiceAccount + RBAC for log collectors and scrapers.
@@ -403,6 +419,7 @@ gfs-user:
       - extensions
       - policy
       - rbac.authorization.k8s.io
+      - gateway.networking.k8s.io
     resources:
       - pods
       - componentstatuses
@@ -413,7 +430,8 @@ gfs-user:
       - events
       - endpoints
       - horizontalpodautoscalers
-      - ingress
+      - httproutes
+      - grpcroutes
       - jobs
       - cronjobs
       - limitranges

@@ -25,19 +25,17 @@ spec:
     {{- end }}
 {{- end }}
 
-{{- define "grafascope.common.victoriaIngress" -}}
+{{- define "grafascope.common.victoriaHttpRoute" -}}
 {{- $path := include (printf "%s.globalPath" .Chart.Name) . -}}
 {{- $port := include (printf "%s.globalPort" .Chart.Name) . -}}
-{{- include "grafascope.common.ingress" (dict
+{{- include "grafascope.common.httpRoute" (dict
   "context" .
   "name" (include "victoria.fullname" .)
   "labels" (include "victoria.labels" .)
   "serviceName" (include "victoria.fullname" .)
   "servicePort" (default .Values.service.port $port)
   "path" $path
-  "pathType" "Prefix"
-  "ingress" .Values.ingress
-  "rewrite" (dict "enabled" false "target" "")
+  "httpRoute" .Values.httpRoute
 ) }}
 {{- end }}
 

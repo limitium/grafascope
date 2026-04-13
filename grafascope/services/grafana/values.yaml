@@ -4,13 +4,11 @@ service:
   type: ClusterIP
   port: 3000
 
-ingress:
-  # Ingress is disabled by default in the service chart.
+httpRoute:
   enabled: false
-  className: nginx
   annotations: {}
-  hosts: []
-  tls: []
+  filters: []
+  timeouts: {}
 
 admin:
   # Required: set existingSecret (recommended) or both user and password.

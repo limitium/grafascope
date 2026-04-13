@@ -2,12 +2,10 @@ service:
   type: ClusterIP
   port: 8428
 
-ingress:
+httpRoute:
   enabled: false
-  className: nginx
   annotations: {}
-  hosts: []
-  tls: []
+  filters: []
 
 persistence:
   enabled: true
