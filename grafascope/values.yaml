@@ -45,15 +45,15 @@ global:
     victoriaTracesOtlpGrpc: 4317
     vmagent: 8429
     # Prometheus sql_exporter (burningalchemist/sql_exporter) metrics port.
-    sqlExporter: 9399
+    sql-exporter: 9399
   # Optional imagePullSecrets applied to all charts that support it.
   imagePullSecrets: []
   scrapers:
     # Optional global scrape targets for vmagent.
     # Leave empty when using per-release vmagent.scrapeTargets.
     metricsTargets: []
-  # When sqlExporter subchart is enabled, turn on vmagent scrape of its /metrics endpoint (same namespace).
-  sqlExporter:
+  # When sql-exporter subchart is enabled, turn on vmagent scrape of its /metrics endpoint (same namespace).
+  sql-exporter:
     vmagentScrape: false
   # Cluster name added as log attribute for multi-cluster filtering (e.g. clusterName:prod).
   clusterName: ""
@@ -203,7 +203,8 @@ vmagent:
 
 # Custom SQL metrics (Prometheus format) via burningalchemist/sql_exporter — Oracle (go-ora) and other drivers in image.
 # Wire credentials with extraEnv / envFromSecrets; put DSN-safe literals in ConfigMaps and secrets for ${VAR} expansion.
-sqlExporter:
+# Values key is sql-exporter (kebab-case) to match fluent-bit / victoria-logs-collector.
+sql-exporter:
   enabled: false
   image:
     repository: burningalchemist/sql_exporter

@@ -41,8 +41,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if not $p -}}
 {{- $p = 9399 -}}
 {{- if and .Values.global .Values.global.ports -}}
-{{- if hasKey .Values.global.ports "sqlExporter" -}}
-{{- $p = index .Values.global.ports "sqlExporter" -}}
+{{- if hasKey .Values.global.ports "sql-exporter" -}}
+{{- $p = index .Values.global.ports "sql-exporter" -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

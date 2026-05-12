@@ -8,7 +8,7 @@ image:
 service:
   enabled: true
   type: ClusterIP
-  port: "" # defaults to global.ports.sqlExporter when empty
+  port: "" # defaults to global.ports.sql-exporter when empty
 
 replicaCount: 1
 

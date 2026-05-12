@@ -40,13 +40,13 @@ data:
       {{- toYaml $targets | nindent 6 }}
       {{- end }}
       {{- $sqlScrape := false }}
-      {{- if and .Values.global (index .Values.global "sqlExporter") }}
-      {{- $sqlScrape = (index .Values.global "sqlExporter").vmagentScrape | default false }}
+      {{- if and .Values.global (index .Values.global "sql-exporter") }}
+      {{- $sqlScrape = (index .Values.global "sql-exporter").vmagentScrape | default false }}
       {{- end }}
       {{- if $sqlScrape }}
       {{- $sqlPort := 9399 }}
-      {{- if and .Values.global .Values.global.ports (hasKey .Values.global.ports "sqlExporter") }}
-      {{- $sqlPort = index .Values.global.ports "sqlExporter" }}
+      {{- if and .Values.global .Values.global.ports (hasKey .Values.global.ports "sql-exporter") }}
+      {{- $sqlPort = index .Values.global.ports "sql-exporter" }}
       {{- end }}
       - job_name: sql-exporter
         metrics_path: /metrics

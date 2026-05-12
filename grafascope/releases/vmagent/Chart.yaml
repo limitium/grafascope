@@ -15,7 +15,6 @@ dependencies:
     condition: vmagent.enabled
 
   - name: sql-exporter
-    alias: sqlExporter
     version: 0.1.0
     repository: "file://../../scrapers/sql-exporter"
-    condition: sqlExporter.enabled
+    condition: sql-exporter.enabled
