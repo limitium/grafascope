@@ -24,6 +24,9 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 
+# Default false: fully read-only pod (no emptyDir). Set true only if the exporter/driver needs a writable /tmp.
+writableTmpVolume: false
+
 # Main sql_exporter.yml plus optional per-collector files in one ConfigMap (unless existingConfigMap is set).
 config:
   # Reference a ConfigMap you manage (keys become files under the mount path). Typical key: sql_exporter.yml

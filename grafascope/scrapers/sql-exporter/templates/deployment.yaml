@@ -35,8 +35,10 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.writableTmpVolume }}
       securityContext:
         fsGroup: 65534
+      {{- end }}
       containers:
         - name: sql-exporter
           {{- $imageRepo := .Values.image.repository }}
@@ -56,12 +58,16 @@ spec:
           ports:
             - name: http
               containerPort: {{ include "sql-exporter.servicePort" . }}
+          {{- if or .Values.writableTmpVolume .Values.extraEnv }}
           env:
+            {{- if .Values.writableTmpVolume }}
             - name: TMPDIR
               value: "/tmp"
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+          {{- end }}
           {{- if or .Values.envFromSecrets .Values.envFromConfigMaps }}
           envFrom:
             {{- range .Values.envFromSecrets }}
@@ -74,8 +80,10 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts:
+            {{- if .Values.writableTmpVolume }}
             - name: tmp
               mountPath: /tmp
+            {{- end }}
             {{- if .Values.config.existingConfigMap }}
             - name: user-config
               mountPath: {{ .Values.config.existingConfigMountPath | quote }}
@@ -103,8 +111,10 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
+        {{- if .Values.writableTmpVolume }}
         - name: tmp
           emptyDir: {}
+        {{- end }}
         {{- if .Values.config.existingConfigMap }}
         - name: user-config
           configMap:

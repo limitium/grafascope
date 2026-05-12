@@ -201,9 +201,6 @@ vmagent:
     limits:
       memory: 1Gi
 
-# Custom SQL metrics (Prometheus format) via burningalchemist/sql_exporter — Oracle (go-ora) and other drivers in image.
-# Wire credentials with extraEnv / envFromSecrets; put DSN-safe literals in ConfigMaps and secrets for ${VAR} expansion.
-# Values key is sql-exporter (kebab-case) to match fluent-bit / victoria-logs-collector.
 sql-exporter:
   enabled: false
   image:
@@ -225,6 +222,7 @@ sql-exporter:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  writableTmpVolume: false
   config:
     existingConfigMap: ""
     existingConfigMountPath: /etc/sql_exporter
