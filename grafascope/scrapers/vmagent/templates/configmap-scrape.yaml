@@ -39,5 +39,20 @@ data:
       {{- if $targets }}
       {{- toYaml $targets | nindent 6 }}
       {{- end }}
+      {{- $sqlScrape := false }}
+      {{- if and .Values.global (index .Values.global "sqlExporter") }}
+      {{- $sqlScrape = (index .Values.global "sqlExporter").vmagentScrape | default false }}
+      {{- end }}
+      {{- if $sqlScrape }}
+      {{- $sqlPort := 9399 }}
+      {{- if and .Values.global .Values.global.ports (hasKey .Values.global.ports "sqlExporter") }}
+      {{- $sqlPort = index .Values.global.ports "sqlExporter" }}
+      {{- end }}
+      - job_name: sql-exporter
+        metrics_path: /metrics
+        static_configs:
+          - targets:
+              - {{ printf "sql-exporter:%v" $sqlPort | quote }}
+      {{- end }}
 {{- end }}
 

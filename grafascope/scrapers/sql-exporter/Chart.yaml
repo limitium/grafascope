@@ -1,0 +1,5 @@
+apiVersion: v2
+name: sql-exporter
+description: Prometheus-compatible SQL metrics exporter (multi-database jobs, Oracle via go-ora)
+type: application
+version: 0.1.0

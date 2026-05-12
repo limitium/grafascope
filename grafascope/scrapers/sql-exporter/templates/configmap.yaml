@@ -1,0 +1,26 @@
+{{- if and .Values.enabled (not .Values.config.existingConfigMap) }}
+{{- $main := .Values.config.sqlExporterYml }}
+{{- if and (not $main) .Values.config.useOracleBootstrap }}
+{{- $main = include "sql-exporter.oracleBootstrapMain" . }}
+{{- end }}
+{{- if not $main }}
+{{- fail "sql-exporter: set config.existingConfigMap, config.sqlExporterYml, or config.useOracleBootstrap=true" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sql-exporter.fullname" . }}-config
+  labels:
+    {{- include "sql-exporter.labels" . | nindent 4 }}
+data:
+  sql_exporter.yml: |
+{{- $main | nindent 4 }}
+{{- if and (not .Values.config.sqlExporterYml) .Values.config.useOracleBootstrap }}
+  grafascope_oracle_custom.collector.yml: |
+{{- include "sql-exporter.oracleBootstrapCollector" . | nindent 4 }}
+{{- end }}
+{{- range $fn, $content := .Values.config.collectorFiles }}
+  {{ $fn }}: |
+{{- $content | nindent 4 }}
+{{- end }}
+{{- end }}

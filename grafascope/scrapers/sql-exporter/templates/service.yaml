@@ -1,0 +1,16 @@
+{{- if and .Values.enabled .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sql-exporter.fullname" . }}
+  labels:
+    {{- include "sql-exporter.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "sql-exporter.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ include "sql-exporter.servicePort" . }}
+      targetPort: http
+{{- end }}

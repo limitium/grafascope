@@ -1,0 +1,81 @@
+enabled: false
+
+image:
+  repository: burningalchemist/sql_exporter
+  tag: "0.23.0"
+  pullPolicy: IfNotPresent
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: "" # defaults to global.ports.sqlExporter when empty
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Main sql_exporter.yml plus optional per-collector files in one ConfigMap (unless existingConfigMap is set).
+config:
+  # Reference a ConfigMap you manage (keys become files under the mount path). Typical key: sql_exporter.yml
+  existingConfigMap: ""
+  # Mount path for the entire ConfigMap (each key = one file).
+  existingConfigMountPath: /etc/sql_exporter
+  # When existingConfigMap is empty: full sql_exporter.yml content (jobs, global, collector_files, inline collectors).
+  sqlExporterYml: ""
+  # When existingConfigMap is empty and sqlExporterYml is empty: ship a minimal Oracle-ready layout using ORACLE_DSN.
+  useOracleBootstrap: true
+  # Extra collector files (filename -> YAML). Mounted next to sql_exporter.yml; reference via collector_files glob.
+  collectorFiles: {}
+  # Example:
+  # collectorFiles:
+  #   myapp.collector.yml: |
+  #     collector_name: myapp
+  #     metrics:
+  #       - metric_name: myapp_rows_total
+  #         type: counter
+  #         help: "Rows from app table."
+  #         values: [cnt]
+  #         query: |
+  #           SELECT COUNT(*) AS cnt FROM "${ORACLE_SCHEMA_OWNER}".MY_TABLE
+
+# Environment variables expand in sql_exporter.yml and collector files (${VAR}), e.g. DSN parts and schema owner.
+extraEnv: []
+# - name: ORACLE_DSN
+#   valueFrom:
+#     secretKeyRef:
+#       name: oracle-conn
+#       key: dsn
+# - name: ORACLE_SCHEMA_OWNER
+#   valueFrom:
+#     configMapKeyRef:
+#       name: oracle-query-config
+#       key: schema_owner
+
+envFromSecrets: []
+# - oracle-credentials
+
+envFromConfigMaps: []
+# - oracle-query-config
+
+extraVolumes: []
+extraVolumeMounts: []
+
+# Optional RBAC when using sql_exporter k8ssecret:// DSNs (see upstream sql_exporter Kubernetes secret docs).
+rbac:
+  create: false
+
+serviceAccount:
+  create: false
+  automountServiceAccountToken: true
+  annotations: {}
+  name: ""

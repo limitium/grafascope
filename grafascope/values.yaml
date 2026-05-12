@@ -44,12 +44,17 @@ global:
     # OTLP gRPC port for victoria-traces (ingestion).
     victoriaTracesOtlpGrpc: 4317
     vmagent: 8429
+    # Prometheus sql_exporter (burningalchemist/sql_exporter) metrics port.
+    sqlExporter: 9399
   # Optional imagePullSecrets applied to all charts that support it.
   imagePullSecrets: []
   scrapers:
     # Optional global scrape targets for vmagent.
     # Leave empty when using per-release vmagent.scrapeTargets.
     metricsTargets: []
+  # When sqlExporter subchart is enabled, turn on vmagent scrape of its /metrics endpoint (same namespace).
+  sqlExporter:
+    vmagentScrape: false
   # Cluster name added as log attribute for multi-cluster filtering (e.g. clusterName:prod).
   clusterName: ""
 
@@ -195,6 +200,48 @@ vmagent:
       memory: 1Gi
     limits:
       memory: 1Gi
+
+# Custom SQL metrics (Prometheus format) via burningalchemist/sql_exporter — Oracle (go-ora) and other drivers in image.
+# Wire credentials with extraEnv / envFromSecrets; put DSN-safe literals in ConfigMaps and secrets for ${VAR} expansion.
+sqlExporter:
+  enabled: false
+  image:
+    repository: burningalchemist/sql_exporter
+    tag: "0.23.0"
+    pullPolicy: IfNotPresent
+  service:
+    enabled: true
+    type: ClusterIP
+    port: ""
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  config:
+    existingConfigMap: ""
+    existingConfigMountPath: /etc/sql_exporter
+    sqlExporterYml: ""
+    useOracleBootstrap: true
+    collectorFiles: {}
+  extraEnv: []
+  envFromSecrets: []
+  envFromConfigMaps: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  rbac:
+    create: false
+  serviceAccount:
+    create: false
+    automountServiceAccountToken: true
+    annotations: {}
+    name: ""
 
 victoria-logs-collector:
   enabled: true
