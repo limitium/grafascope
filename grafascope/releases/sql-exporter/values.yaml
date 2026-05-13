@@ -1,0 +1,2 @@
+# Values are supplied from repo-root grafascope/values.yaml under the `sql-exporter:` key
+# (and optional consumer overlays). This file intentionally left minimal.

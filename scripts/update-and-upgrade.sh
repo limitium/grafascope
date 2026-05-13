@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Update chart deps and upgrade releases (prod/regular k8s):
 # 1) core
-# 2) vmagent
-# 3) fluent-bit (log-tailer)
-# 4) demo-apps
-# 5) delete-all (uninstall the four above)
+# 2) sql-exporter (optional release)
+# 3) vmagent
+# 4) fluent-bit (log-tailer)
+# 5) demo-apps
+# 6) delete-all (uninstall the above)
 #
 # Defaults:
 #   NAMESPACE=grafascope
@@ -18,6 +19,13 @@
 #   scripts/update-and-upgrade.sh <env> [action] [--dry-run]
 #   scripts/update-and-upgrade.sh grafascope-dev all
 #   scripts/update-and-upgrade.sh grafascope-dev core --dry-run
+#
+# sql-exporter (optional; separate release grafascope-sql-exporter, see grafascope/releases/sql-exporter):
+#   - Configure under top-level sql-exporter: in merged values (grafascope/values.yaml + env overlay).
+#   - Install/upgrade: action sql-exporter, or obs/all (runs update_sql_exporter before vmagent).
+#   - vmagent scrape job for sql-exporter: set vmagent.scrapeSqlExporter: true (same namespace;
+#     target host sql-exporter, port global.ports.sql-exporter). Independent of includeDefaultScrapeJobs.
+#   - Extra Helm values: VALUES="grafascope/values.yaml -f /path/to/more.yaml" ./scripts/...
 
 set -euo pipefail
 
@@ -82,6 +90,11 @@ update_core() {
   run helm upgrade --install grafascope-core ./grafascope/releases/core -n "$NAMESPACE" --create-namespace $VALUES_ARGS
 }
 
+update_sql_exporter() {
+  run helm dependency update ./grafascope/releases/sql-exporter
+  run helm upgrade --install grafascope-sql-exporter ./grafascope/releases/sql-exporter -n "$NAMESPACE" --create-namespace $VALUES_ARGS
+}
+
 update_vmagent() {
   run helm dependency update ./grafascope/releases/vmagent
   run helm upgrade --install grafascope-vmagent ./grafascope/releases/vmagent -n "$NAMESPACE" --create-namespace $VALUES_ARGS
@@ -101,6 +114,7 @@ delete_all() {
   run helm uninstall demo-apps -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall grafascope-log-tailer -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall grafascope-vmagent -n "$NAMESPACE" 2>/dev/null || true
+  run helm uninstall grafascope-sql-exporter -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall grafascope-vlagent -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall grafascope-core -n "$NAMESPACE" 2>/dev/null || true
   run helm uninstall gfs-user -n "$NAMESPACE" 2>/dev/null || true
@@ -111,6 +125,7 @@ case "$ACTION" in
   all)
     update_gfs_user
     update_core
+    update_sql_exporter
     update_vmagent
     update_fluent_bit
     update_demo_apps
@@ -118,11 +133,13 @@ case "$ACTION" in
   obs)
     update_gfs_user
     update_core
+    update_sql_exporter
     update_fluent_bit
     update_vmagent
     ;;
   demo)
     update_demo_apps
+    update_sql_exporter
     update_vmagent
     ;;
   core)
@@ -137,13 +154,16 @@ case "$ACTION" in
   demo-apps|demoapps)
     update_demo_apps
     ;;
+  sql-exporter|sqlexporter)
+    update_sql_exporter
+    ;;
   delete-all|delete)
     delete_all
     ;;
   *)
     echo "Unknown action: $ACTION" >&2
     echo "Usage: $0 <env> [action] [--dry-run]" >&2
-    echo "Actions: all | obs | demo | core | vmagent | fluent-bit | demo-apps | delete-all" >&2
+    echo "Actions: all | obs | demo | core | vmagent | sql-exporter | fluent-bit | demo-apps | delete-all" >&2
     exit 1
     ;;
 esac

@@ -15,9 +15,9 @@ From a **consumer repo** (with grafascope as submodule and `values/<env>.yaml`):
 ./grafascope/scripts/update-and-upgrade.sh grafascope-dev all
 ```
 
-This installs: core (Grafana + VictoriaMetrics/Logs/Traces), vmagent, log-tailer
-(Fluent Bit), and demo-apps. It does not install gfs-user or vlagent—use manual
-commands below if needed.
+This installs: gfs-user, core (Grafana + VictoriaMetrics/Logs/Traces), optional
+`grafascope-sql-exporter` (when `sql-exporter.enabled` is true in values), vmagent, log-tailer
+(Fluent Bit), and demo-apps.
 
 ```bash
 # Other actions
@@ -25,6 +25,7 @@ commands below if needed.
 ./grafascope/scripts/update-and-upgrade.sh grafascope-dev vmagent
 ./grafascope/scripts/update-and-upgrade.sh grafascope-dev fluent-bit
 ./grafascope/scripts/update-and-upgrade.sh grafascope-dev demo-apps
+./grafascope/scripts/update-and-upgrade.sh grafascope-dev sql-exporter
 ./grafascope/scripts/update-and-upgrade.sh grafascope-dev delete-all
 ```
 
@@ -44,6 +45,10 @@ helm upgrade --install grafascope-core ./grafascope/releases/core -n grafascope 
 # Scrapers
 helm dependency update ./grafascope/releases/vmagent
 helm upgrade --install grafascope-vmagent ./grafascope/releases/vmagent -n grafascope -f grafascope/values.yaml
+
+# Optional: sql_exporter (separate release from vmagent; set sql-exporter.enabled in values)
+helm dependency update ./grafascope/releases/sql-exporter
+helm upgrade --install grafascope-sql-exporter ./grafascope/releases/sql-exporter -n grafascope -f grafascope/values.yaml
 
 # Log collectors (use one or the other)
 # vlagent: VictoriaLogs collector (K8s API)

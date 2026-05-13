@@ -1,0 +1,11 @@
+apiVersion: v2
+name: grafascope-sql-exporter
+description: Standalone sql_exporter release (separate Helm release from vmagent)
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: sql-exporter
+    version: 0.1.0
+    repository: "file://../../scrapers/sql-exporter"
+    condition: sql-exporter.enabled

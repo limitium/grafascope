@@ -13,8 +13,3 @@ dependencies:
     version: 0.1.0
     repository: "file://../../scrapers/vmagent"
     condition: vmagent.enabled
-
-  - name: sql-exporter
-    version: 0.1.0
-    repository: "file://../../scrapers/sql-exporter"
-    condition: sql-exporter.enabled

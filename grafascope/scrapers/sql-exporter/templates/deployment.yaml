@@ -42,8 +42,8 @@ spec:
       containers:
         - name: sql-exporter
           {{- $imageRepo := .Values.image.repository }}
-          {{- if (.Values.global).image.registry }}
-          {{- $imageRepo = printf "%s/%s" (trimSuffix "/" (.Values.global).image.registry) (trimPrefix "/" $imageRepo) }}
+          {{- if and .Values.global .Values.global.image .Values.global.image.registry }}
+          {{- $imageRepo = printf "%s/%s" (trimSuffix "/" .Values.global.image.registry) (trimPrefix "/" $imageRepo) }}
           {{- end }}
           image: "{{ $imageRepo }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}

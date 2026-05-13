@@ -16,6 +16,8 @@ remoteWriteUrl: "" # when empty, built from global protocol/ports/paths
 
 scrapeInterval: 30s # global scrape interval
 includeDefaultScrapeJobs: false # when true, include victoria-metrics, victoria-logs, victoria-traces, grafana, fluent-bit
+# When true, add a scrape job for the separate sql-exporter Service (same namespace, global.ports.sql-exporter).
+scrapeSqlExporter: false
 scrapeTargets: [] # optional override; when empty, use global defaults
 podAnnotations: {}
 nodeSelector: {}

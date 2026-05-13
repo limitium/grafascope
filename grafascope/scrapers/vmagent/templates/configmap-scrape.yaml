@@ -32,18 +32,7 @@ data:
         static_configs:
           - targets: ["grafascope-log-tailer-fluent-bit:2020"]
       {{- end }}
-      {{- $targets := .Values.scrapeTargets }}
-      {{- if not $targets }}
-      {{- $targets = .Values.global.scrapers.metricsTargets }}
-      {{- end }}
-      {{- if $targets }}
-      {{- toYaml $targets | nindent 6 }}
-      {{- end }}
-      {{- $sqlScrape := false }}
-      {{- if and .Values.global (index .Values.global "sql-exporter") }}
-      {{- $sqlScrape = (index .Values.global "sql-exporter").vmagentScrape | default false }}
-      {{- end }}
-      {{- if $sqlScrape }}
+      {{- if .Values.scrapeSqlExporter }}
       {{- $sqlPort := 9399 }}
       {{- if and .Values.global .Values.global.ports (hasKey .Values.global.ports "sql-exporter") }}
       {{- $sqlPort = index .Values.global.ports "sql-exporter" }}
@@ -53,6 +42,13 @@ data:
         static_configs:
           - targets:
               - {{ printf "sql-exporter:%v" $sqlPort | quote }}
+      {{- end }}
+      {{- $targets := .Values.scrapeTargets }}
+      {{- if not $targets }}
+      {{- $targets = .Values.global.scrapers.metricsTargets }}
+      {{- end }}
+      {{- if $targets }}
+      {{- toYaml $targets | nindent 6 }}
       {{- end }}
 {{- end }}
 

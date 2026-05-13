@@ -52,9 +52,6 @@ global:
     # Optional global scrape targets for vmagent.
     # Leave empty when using per-release vmagent.scrapeTargets.
     metricsTargets: []
-  # When sql-exporter subchart is enabled, turn on vmagent scrape of its /metrics endpoint (same namespace).
-  sql-exporter:
-    vmagentScrape: false
   # Cluster name added as log attribute for multi-cluster filtering (e.g. clusterName:prod).
   clusterName: ""
 
@@ -175,6 +172,8 @@ vmagent:
   enabled: true
   # Include default self-monitoring jobs (victoria-metrics, victoria-logs, victoria-traces, grafana, fluent-bit).
   includeDefaultScrapeJobs: false
+  # When true, scrape the separate sql-exporter Service in this namespace (see grafascope-sql-exporter release).
+  scrapeSqlExporter: false
   # Metrics scraper image/version.
   image:
     repository: victoriametrics/vmagent
@@ -201,6 +200,8 @@ vmagent:
     limits:
       memory: 1Gi
 
+# Used by grafascope/releases/sql-exporter (separate Helm release from vmagent). Install with
+# update-and-upgrade.sh … sql-exporter, or obs/all when sql-exporter.enabled is true.
 sql-exporter:
   enabled: false
   image:
